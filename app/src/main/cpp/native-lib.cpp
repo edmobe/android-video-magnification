@@ -4,47 +4,6 @@
 #include <opencv2/imgproc.hpp>
 #include "android/bitmap.h"
 
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_flip(
-        JNIEnv* env,
-        jobject p_this,
-        jobject bitmapIn,
-        jobject bitmapOut) {
-    Mat src;
-    bitmapToMat(env, bitmapIn, src, false);
-    // NOTE bitmapToMat returns Mat in RGBA format, if needed convert to BGRA using cvtColor
-
-    myFlip(src);
-
-    // NOTE matToBitmap expects Mat in GRAY/RGB(A) format, if needed convert using cvtColor
-    matToBitmap(env, src, bitmapOut, false);
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_blur(
-        JNIEnv* env,
-        jobject p_this,
-        jobject bitmapIn,
-        jobject bitmapOut,
-        jfloat sigma) {
-    Mat src;
-    bitmapToMat(env, bitmapIn, src, false);
-    // NOTE bitmapToMat returns Mat in RGBA format, if needed convert to BGRA using cvtColor
-
-    myBlur(src);
-
-    // NOTE matToBitmap expects Mat in GRAY/RGB(A) format, if needed convert using cvtColor
-    matToBitmap(env, src, bitmapOut, false);
-}
-
 void bitmapToMat(JNIEnv *env, jobject bitmap, Mat& dst, jboolean needUnPremultiplyAlpha)
 {
     AndroidBitmapInfo  info;
@@ -132,4 +91,45 @@ void matToBitmap(JNIEnv* env, Mat src, jobject bitmap, jboolean needPremultiplyA
         env->ThrowNew(je, "Unknown exception in JNI code {nMatToBitmap}");
         return;
     }
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_videomagnification_MainActivity_stringFromJNI(
+        JNIEnv* env,
+        jobject /* this */) {
+    std::string hello = "Hello from C++";
+    return env->NewStringUTF(hello.c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_videomagnification_MainActivity_flip(
+        JNIEnv* env,
+        jobject p_this,
+        jobject bitmapIn,
+        jobject bitmapOut) {
+    Mat src;
+    bitmapToMat(env, bitmapIn, src, false);
+    // NOTE bitmapToMat returns Mat in RGBA format, if needed convert to BGRA using cvtColor
+
+    myFlip(src);
+
+    // NOTE matToBitmap expects Mat in GRAY/RGB(A) format, if needed convert using cvtColor
+    matToBitmap(env, src, bitmapOut, false);
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_videomagnification_MainActivity_blur(
+        JNIEnv* env,
+        jobject p_this,
+        jobject bitmapIn,
+        jobject bitmapOut,
+        jfloat sigma) {
+    Mat src;
+    bitmapToMat(env, bitmapIn, src, false);
+    // NOTE bitmapToMat returns Mat in RGBA format, if needed convert to BGRA using cvtColor
+
+    myBlur(src, sigma);
+
+    // NOTE matToBitmap expects Mat in GRAY/RGB(A) format, if needed convert using cvtColor
+    matToBitmap(env, src, bitmapOut, false);
 }
