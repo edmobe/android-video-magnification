@@ -15,10 +15,38 @@
         android:id="@+id/btn_open"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Open Video"
+        android:layout_marginBottom="324dp"
         android:minWidth="160dp"
+        android:text="Open Video to start"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginEnd="25dp"
+        android:text="The Video Magnificator is a project developed in the Costa Rica Institute of Technology that utilizes an Android resource optimized Eulerian video magnification algorithm to obtain heart rate or respiratory rate."
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toTopOf="@+id/btn_open"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:text="Video Magnificator"
+        android:textSize="30sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
