@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:gravity="center"
+    android:orientation="vertical"
     android:padding="16dp"
 
     tools:context=".MainActivity">
@@ -31,10 +31,10 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="25dp"
-        app:layout_constraintBottom_toTopOf="@+id/textView4"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/myRadioGroup"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
@@ -43,49 +43,60 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginBottom="250dp"
-        android:text="File path"
+        android:layout_marginBottom="255dp"
+        android:text="Algorithm"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/previewPath"
+    <RadioGroup
+        android:id="@+id/myRadioGroup"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="25dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="10dp"
-        android:text="File path"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
+        android:layout_marginBottom="170dp"
+        android:checkedButton="@+id/radio_gaussian"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.066"
         app:layout_constraintStart_toEndOf="@+id/textView4"
-        app:layout_constraintTop_toBottomOf="@+id/videoPreview" />
+        app:layout_constraintTop_toBottomOf="@+id/videoPreview">
+
+        <RadioButton
+            android:id="@+id/radio_gaussian_ideal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gaussian ideal bandpass" />
+
+        <RadioButton
+            android:id="@+id/radio_laplacian_ideal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Laplacian ideal bandpass" />
+
+        <RadioButton
+            android:id="@+id/radio_laplacian_butterworth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Laplacian Butterworth" />
+
+        <RadioButton
+            android:id="@+id/radio_laplacian_iir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Laplacian IIR" />
+
+    </RadioGroup>
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="0dp"
+        android:id="@+id/btn_next"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:layout_marginBottom="100dp"
-        android:text="Magnify heart rate"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button2"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="100dp"
-        android:text="Magnify breath rate"
+        android:text="Next"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/button" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

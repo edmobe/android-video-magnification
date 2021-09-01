@@ -21,7 +21,7 @@ import java.util.ArrayList;
 
 public class Home extends AppCompatActivity {
 
-    Button btnOpen;
+    private Button btnOpen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +91,7 @@ public class Home extends AppCompatActivity {
             // Check condition
             if (requestCode == 101) {
                 Intent videoEditorActivity = new Intent(getApplicationContext(), VideoEditor.class);
-                videoEditorActivity.putExtra("videoUrl", path);
+                videoEditorActivity.putExtra("videoPath", path);
                 startActivity(videoEditorActivity);
             } else {
                 displayShortToast("Unknown error while requesting the video. Request code: "

@@ -1,5 +1,6 @@
 package com.example.videomagnification;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -14,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private ActivityMainBinding binding;
+    private String videoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        Intent intent = getIntent(); // gets the previously created intent
+        videoPath = intent.getStringExtra("videoPath");
+        displayShortToast(videoPath);
     }
 
     private void displayShortToast(String string) {
