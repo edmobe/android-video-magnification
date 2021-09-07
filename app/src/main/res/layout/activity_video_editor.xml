@@ -10,6 +10,41 @@
 
     tools:context=".MainActivity">
 
+    <RadioGroup
+        android:id="@+id/radio_group_algorithm"
+        android:layout_width="200dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView4">
+
+        <RadioButton
+            android:id="@+id/radio_gaussian_ideal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/gaussian_ideal_bandpass" />
+
+        <RadioButton
+            android:id="@+id/radio_laplacian_ideal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/laplacian_ideal_bandpass" />
+
+        <RadioButton
+            android:id="@+id/radio_laplacian_butterworth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/laplacian_butterworth" />
+
+        <RadioButton
+            android:id="@+id/radio_laplacian_iir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/laplacian_iir" />
+
+    </RadioGroup>
+
     <TextView
         android:id="@+id/textView3"
         android:layout_width="wrap_content"
@@ -17,7 +52,7 @@
         android:layout_marginStart="10dp"
         android:layout_marginTop="100dp"
         android:layout_marginEnd="10dp"
-        android:text="Magnify video"
+        android:text="@string/magnify_video"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
@@ -32,6 +67,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="20dp"
+        android:contentDescription="@string/video_preview"
         app:layout_constraintBottom_toTopOf="@+id/textView4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -44,48 +80,43 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="375dp"
-        android:text="Select an algorithm"
+        android:text="@string/select_an_algorithm"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <RadioGroup
-        android:id="@+id/myRadioGroup"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="170dp"
-        android:checkedButton="@+id/radio_gaussian"
+        android:layout_marginEnd="96dp"
+        android:layout_marginBottom="375dp"
+        android:text="@string/magnify"
+        android:textAlignment="viewEnd"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radio_group_magnify"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="1dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView4">
+        app:layout_constraintTop_toBottomOf="@+id/textView8">
 
         <RadioButton
-            android:id="@+id/radio_gaussian_ideal"
+            android:id="@+id/radio_movement"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Gaussian ideal bandpass" />
+            android:text="@string/movement" />
 
         <RadioButton
-            android:id="@+id/radio_laplacian_ideal"
+            android:id="@+id/radio_color"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Laplacian ideal bandpass" />
-
-        <RadioButton
-            android:id="@+id/radio_laplacian_butterworth"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Laplacian Butterworth" />
-
-        <RadioButton
-            android:id="@+id/radio_laplacian_iir"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Laplacian IIR" />
+            android:layout_height="match_parent"
+            android:text="@string/color" />
 
     </RadioGroup>
 
@@ -95,7 +126,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="100dp"
         android:enabled="false"
-        android:text="Next"
+        android:text="@string/next"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

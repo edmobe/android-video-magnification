@@ -16,7 +16,8 @@ public class VideoEditor extends AppCompatActivity {
 
     private String videoPath;
     private Button btnNext;
-    private RadioGroup radioGroup;
+    private RadioGroup radioGroupAlgorithm;
+    private RadioGroup radioGroupMagnification;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,33 +32,47 @@ public class VideoEditor extends AppCompatActivity {
         ImageView imageView = (ImageView) findViewById(R.id.videoPreview);
         imageView.setImageBitmap(thumbnail);
 
-        radioGroup = findViewById(R.id.myRadioGroup);
-        radioGroup.setOnCheckedChangeListener((group, checkedId) -> btnNext.setEnabled(true));
+        radioGroupAlgorithm = findViewById(R.id.radio_group_algorithm);
+        radioGroupMagnification = findViewById(R.id.radio_group_magnify);
+
+        radioGroupAlgorithm.setOnCheckedChangeListener((group, checkedId) -> {
+            if (radioGroupMagnification.getCheckedRadioButtonId() != -1) {
+                btnNext.setEnabled(true);
+            }
+        });
+
+        radioGroupMagnification.setOnCheckedChangeListener((group, checkedId) -> {
+            if (radioGroupAlgorithm.getCheckedRadioButtonId() != -1) {
+                btnNext.setEnabled(true);
+            }
+        });
 
         btnNext = findViewById(R.id.btn_next);
         btnNext.setOnClickListener(v -> {
-            int selectedOption = radioGroup.getCheckedRadioButtonId();
+            int selectedAlgorithmOption = radioGroupAlgorithm.getCheckedRadioButtonId();
+            int selectedMagnificationOption = radioGroupMagnification.getCheckedRadioButtonId();
 
-            if (selectedOption == -1) {
+            if (selectedAlgorithmOption == -1) {
                 displayShortToast("Please select an algorithm.");
-            } else if (selectedOption == findViewById(R.id.radio_gaussian_ideal).getId()) {
+            } else if (selectedMagnificationOption == -1) {
+                displayShortToast("Please select what you want to magnify.");
+            } else if (selectedAlgorithmOption ==
+                    findViewById(R.id.radio_gaussian_ideal).getId()) {
                 displayShortToast("Not yet implemented!");
-            } else if (selectedOption == findViewById(R.id.radio_laplacian_ideal).getId() ||
-                    selectedOption == findViewById(R.id.radio_laplacian_butterworth).getId()) {
+            } else if (selectedAlgorithmOption == findViewById(R.id.radio_laplacian_ideal).getId()
+                    || selectedAlgorithmOption ==
+                    findViewById(R.id.radio_laplacian_butterworth).getId()) {
                 Intent videoEditorLaplacianIdealButterActivity =
                         new Intent(getApplicationContext(), VideoEditorLaplacianIdealButter.class);
                 videoEditorLaplacianIdealButterActivity.putExtra("videoPath", videoPath);
                 videoEditorLaplacianIdealButterActivity.putExtra("radioButtonId",
-                        selectedOption);
+                        selectedAlgorithmOption);
                 startActivity(videoEditorLaplacianIdealButterActivity);
-            } else if (selectedOption == findViewById(R.id.radio_laplacian_iir).getId()) {
+            } else if (selectedAlgorithmOption == findViewById(R.id.radio_laplacian_iir).getId()) {
                 displayShortToast("Not yet implemented!");
             } else {
                 displayShortToast("Unknown error!");
             }
-
-
-
         });
     }
 

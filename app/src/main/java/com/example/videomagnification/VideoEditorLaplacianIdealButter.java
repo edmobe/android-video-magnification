@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -12,6 +13,7 @@ public class VideoEditorLaplacianIdealButter extends AppCompatActivity {
 
     private String videoPath;
     private TextView videoPathTextView;
+    private TextView algorithmTextView;
 
     private SeekBar seekAlpha;
     private SeekBar seekLambda;
@@ -37,6 +39,26 @@ public class VideoEditorLaplacianIdealButter extends AppCompatActivity {
         Intent intent = getIntent(); // gets the previously created intent
         videoPath = intent.getStringExtra("videoPath");
 
+        int algorithmRadioButtonId = intent.getIntExtra("radioButtonId", -1);
+        String spatialFiltering = "";
+        String temporalFiltering = "";
+        if (algorithmRadioButtonId == R.id.radio_laplacian_ideal) {
+            spatialFiltering = "Laplacian pyramid";
+            temporalFiltering = "Ideal bandpass";
+        } else if (algorithmRadioButtonId == R.id.radio_laplacian_butterworth) {
+            spatialFiltering = "Laplacian pyramid";
+            temporalFiltering = "Subtraction of two butterworth low-pass filters";
+        } else {
+            Intent videoEditorActivity =
+                    new Intent(getApplicationContext(), VideoEditorLaplacianIdealButter.class);
+            videoEditorActivity.putExtra("videoPath", videoPath);
+            startActivity(videoEditorActivity);
+        }
+
+        algorithmTextView = findViewById(R.id.text_spatial_filter);
+        algorithmTextView.setText(spatialFiltering);
+        algorithmTextView = findViewById(R.id.text_temporal_filter);
+        algorithmTextView.setText(temporalFiltering);
         videoPathTextView = findViewById(R.id.videoPath);
         videoPathTextView.setText(videoPath);
 
@@ -153,6 +175,12 @@ public class VideoEditorLaplacianIdealButter extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void displayShortToast(String string) {
+        Toast.makeText(getApplicationContext(),
+                string,
+                Toast.LENGTH_SHORT).show();
     }
 
     private int getAlpha() {

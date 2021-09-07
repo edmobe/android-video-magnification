@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Video Magnification</string>
     <string name="gaussian_ideal_bandpass">Gaussian ideal bandpass</string>
