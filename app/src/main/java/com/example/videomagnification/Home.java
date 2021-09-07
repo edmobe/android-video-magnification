@@ -61,7 +61,10 @@ public class Home extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull @org.jetbrains.annotations.NotNull String[] permissions, @NonNull @org.jetbrains.annotations.NotNull int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode,
+            @NonNull @org.jetbrains.annotations.NotNull String[] permissions,
+            @NonNull @org.jetbrains.annotations.NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         // Check condition
         if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
@@ -91,7 +94,7 @@ public class Home extends AppCompatActivity {
             // Check condition
             if (requestCode == 101) {
                 Intent videoEditorActivity = new Intent(getApplicationContext(), VideoEditor.class);
-                videoEditorActivity.putExtra("videoPath", path);
+                videoEditorActivity.putExtra(getString(R.string.video_file_path), path);
                 startActivity(videoEditorActivity);
             } else {
                 displayShortToast("Unknown error while requesting the video. Request code: "

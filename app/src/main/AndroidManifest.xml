@@ -11,8 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VideoMagnification">
-        <activity android:name=".VideoEditorLaplacianIir"></activity>
-        <activity android:name=".VideoEditorLaplacianIdealButter" />
+        <activity android:name=".VideoEditorParameters" />
         <activity android:name=".VideoEditor" />
         <activity android:name=".Home">
             <intent-filter>
