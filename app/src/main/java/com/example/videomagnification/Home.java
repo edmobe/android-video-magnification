@@ -4,9 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -62,12 +65,11 @@ public class Home extends AppCompatActivity {
                     Intent videoEditorActivity = new Intent(getApplicationContext(),
                             VideoEditor.class);
                     videoEditorActivity.putExtra(getString(R.string.video_file_path),
-                            "/storage/6531-3531/vid_avi/baby.avi");
+                            getRealPathFromURI(videoPath));
+                            //"/storage/6531-3531/vid_avi/baby.avi");
                             //"/storage/self/primary/Download/sample.txt");
                             //videoPath.getPath());
                             //videoPath.toString());
-                    //displayShortToast("Video Path: " + videoPath.toString());
-                    displayShortToast(getApplicationInfo().dataDir);
                     startActivity(videoEditorActivity);
 
                 } else {
@@ -82,13 +84,6 @@ public class Home extends AppCompatActivity {
         } else {
             displayShortToast("File opener error. Result code: " + resultCode + ".");
         }
-    }
-
-    private void videoPicker() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("video/avi");
-        startActivityForResult(intent, PICK_AVI_VIDEO);
     }
 
     @Override
@@ -115,6 +110,38 @@ public class Home extends AppCompatActivity {
         } else {
             displayShortToast("Permission denied!");
         }
+    }
+
+    private void videoPicker() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("video/avi");
+        startActivityForResult(intent, PICK_AVI_VIDEO);
+    }
+
+    private String getRealPathFromURI(Uri contentURI) {
+        String filePath = "";
+        String wholeID = DocumentsContract.getDocumentId(contentURI);
+
+        // Split at colon, use second item in the array
+        String id = wholeID.split(":")[1];
+
+        String[] column = { MediaStore.Video.Media.DATA };
+
+        // where id is equal to
+        String sel = MediaStore.Video.Media._ID + "=?";
+
+        Cursor cursor = this.getContentResolver().query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                column, sel, new String[]{ id }, null);
+
+        int columnIndex = cursor.getColumnIndex(column[0]);
+
+        if (cursor.moveToFirst()) {
+            filePath = cursor.getString(columnIndex);
+        }
+        cursor.close();
+        return filePath;
     }
 
     private void displayShortToast(String string) {

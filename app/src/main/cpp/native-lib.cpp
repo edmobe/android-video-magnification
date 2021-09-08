@@ -39,16 +39,6 @@ Java_com_example_videomagnification_MainActivity_stringFromJNI(
     std::string videoPath = std::string(videoPathCharArray);
 
     logDebug("File path", videoPathCharArray);
-//
-//    FILE* file = fopen(videoPathCharArray, "r");
-//
-//    if (file != NULL)
-//    {
-//        logDebug("File open status", "File is VALID!");
-//        fclose(file);
-//    } else {
-//        logDebug("File open status", "File is null");
-//    }
 
     VideoCapture video;
     video.open(videoPathCharArray);
