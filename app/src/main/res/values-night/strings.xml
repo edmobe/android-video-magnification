@@ -30,4 +30,6 @@
     <string name="level">Level</string>
     <string name="r2">R2</string>
     <string name="r1">R1</string>
+    <string name="converting_video">Converting video...</string>
+    <string name="why_convert">Please wait. The video must be converted to a specific format so that the Video Magnificator can process it.</string>
 </resources>

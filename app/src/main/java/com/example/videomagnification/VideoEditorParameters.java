@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -306,12 +305,6 @@ public class VideoEditorParameters extends AppCompatActivity {
                     algorithmRadioButtonId);
             startActivity(mainActivityIntent);
         });
-    }
-
-    private void displayShortToast(String string) {
-        Toast.makeText(getApplicationContext(),
-                string,
-                Toast.LENGTH_SHORT).show();
     }
 
     private int getAlpha() {

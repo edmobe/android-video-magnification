@@ -2,7 +2,6 @@ package com.example.videomagnification;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -50,19 +49,7 @@ public class MainActivity extends AppCompatActivity {
         algorithmRadioButtonId = intent.getIntExtra(
                 getString(R.string.select_an_algorithm), -1);
 
-        displayShortToast(stringFromJNI(videoPath));
-
-//        displayShortToast("Path: " + videoPath + ". Alpha: " + alpha + ". Lambda C: " +
-//                lambdaC + ". Level: " + level +  ". Freq low: " + fl + ". Freq high: " + fh +
-//                ". Sampling: " + sampling + ". Chrom Att: " + chromAtt + ". R1: " + r1 + ". R2: " +
-//                r2 + ". Extract: " + extract + ". Algorithm button ID: " +
-//                algorithmRadioButtonId + ".");
-    }
-
-    private void displayShortToast(String string) {
-        Toast.makeText(getApplicationContext(),
-                string,
-                Toast.LENGTH_SHORT).show();
+        ((App) getApplication()).displayShortToast(stringFromJNI(videoPath));
     }
 
     /**

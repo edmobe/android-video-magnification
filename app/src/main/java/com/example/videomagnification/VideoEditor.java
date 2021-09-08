@@ -8,7 +8,6 @@ import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -54,9 +53,9 @@ public class VideoEditor extends AppCompatActivity {
             int selectedMagnificationOption = radioGroupExtract.getCheckedRadioButtonId();
 
             if (selectedAlgorithmOption == -1) {
-                displayShortToast("Please select an algorithm.");
+                ((App) getApplication()).displayShortToast("Please select an algorithm.");
             } else if (selectedMagnificationOption == -1) {
-                displayShortToast("Please select what you want to extract.");
+                ((App) getApplication()).displayShortToast("Please select what you want to extract.");
             } else if (selectedAlgorithmOption == findViewById(R.id.radio_gaussian_ideal).getId() ||
                     selectedAlgorithmOption == findViewById(R.id.radio_laplacian_ideal).getId() ||
                     selectedAlgorithmOption == findViewById(R.id.radio_laplacian_butterworth).getId() ||
@@ -76,19 +75,14 @@ public class VideoEditor extends AppCompatActivity {
                     videoEditorParametersActivity.putExtra(
                             getString(R.string.extract), getString(R.string.heart_rate));
                 } else {
-                    displayShortToast("Please select what you want to extract.");
+                    ((App) getApplication()).displayShortToast(
+                            "Please select what you want to extract.");
                     return;
                 }
                 startActivity(videoEditorParametersActivity);
             } else {
-                displayShortToast("Unknown error!");
+                ((App) getApplication()).displayShortToast("Unknown error!");
             }
         });
-    }
-
-    private void displayShortToast(String string) {
-        Toast.makeText(getApplicationContext(),
-                string,
-                Toast.LENGTH_SHORT).show();
     }
 }

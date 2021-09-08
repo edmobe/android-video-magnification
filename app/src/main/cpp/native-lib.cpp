@@ -14,7 +14,7 @@
 
 void logDebug(std::string title, std::string str) {
     std::string output = title + ": " + str;
-    __android_log_write(ANDROID_LOG_DEBUG, "Native lib", output.c_str());
+    __android_log_write(ANDROID_LOG_DEBUG, "Video Magnification (native lib)", output.c_str());
 }
 
 void logDebugVideoBackends() {
