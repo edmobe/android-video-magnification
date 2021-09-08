@@ -10,8 +10,7 @@
 #include "android/log.h"
 #include <stdio.h>
 #include <iostream>
-#include <exception>
-#include <filesystem>
+#include <fstream>
 
 void logDebug(std::string title, std::string str) {
     std::string output = title + ": " + str;
