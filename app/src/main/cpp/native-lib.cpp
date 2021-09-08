@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <exception>
+#include <filesystem>
 
 void logDebug(std::string title, std::string str) {
     std::string output = title + ": " + str;
@@ -37,8 +38,20 @@ Java_com_example_videomagnification_MainActivity_stringFromJNI(
     const char *videoPathCharArray = env->GetStringUTFChars(video_path, 0);
     std::string videoPath = std::string(videoPathCharArray);
 
+    logDebug("File path", videoPathCharArray);
+//
+//    FILE* file = fopen(videoPathCharArray, "r");
+//
+//    if (file != NULL)
+//    {
+//        logDebug("File open status", "File is VALID!");
+//        fclose(file);
+//    } else {
+//        logDebug("File open status", "File is null");
+//    }
+
     VideoCapture video;
-    video.open(videoPath);
+    video.open(videoPathCharArray);
 
     // Check if video opened successfully
     if (!video.isOpened()) {
