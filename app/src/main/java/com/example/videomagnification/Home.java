@@ -1,27 +1,24 @@
 package com.example.videomagnification;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.jaiselrahman.filepicker.activity.FilePickerActivity;
-import com.jaiselrahman.filepicker.config.Configurations;
-import com.jaiselrahman.filepicker.model.MediaFile;
-
-import java.util.ArrayList;
-
 public class Home extends AppCompatActivity {
 
     private Button btnOpen;
+    private static final int PICK_AVI_VIDEO = 2;
+    private Uri videoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,21 +40,40 @@ public class Home extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent resultData) {
+        super.onActivityResult(requestCode, resultCode, resultData);
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == 2) {
+                // The result data contains a URI for the document or directory that
+                // the user selected.
+                if (resultData != null) {
+                    videoPath = resultData.getData();
+                    Intent videoEditorActivity = new Intent(getApplicationContext(),
+                            VideoEditor.class);
+                    videoEditorActivity.putExtra(getString(R.string.video_file_path),
+                            videoPath.toString());
+                    startActivity(videoEditorActivity);
+                } else {
+                    displayShortToast("Please select a video file.");
+                }
+            } else {
+                displayShortToast("Unknown request code: " + requestCode + ".");
+            }
+
+        } else if (resultCode == 0) {
+            displayShortToast("Please select a video file.");
+        } else {
+            displayShortToast("File opener error. Result code: " + resultCode + ".");
+        }
+    }
+
     private void videoPicker() {
-        // Initialize intent
-        Intent intent = new Intent(Home.this, FilePickerActivity.class);
-        // Put extra
-        intent.putExtra(FilePickerActivity.CONFIGS,
-                new Configurations.Builder()
-                        .setCheckPermission(true)
-                        .setShowImages(false)
-                        .setShowVideos(true)
-                        .enableVideoCapture(true)
-                        .setMaxSelection(1)
-                        .setSkipZeroSizeFiles(true)
-                        .build());
-        // Start activity result
-        startActivityForResult(intent, 101);
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("video/avi");
+        startActivityForResult(intent, PICK_AVI_VIDEO);
     }
 
     @Override
@@ -77,34 +93,6 @@ public class Home extends AppCompatActivity {
             }
         } else {
             displayShortToast("Permission denied!");
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        // Check condition
-        if (resultCode == RESULT_OK && data != null) {
-            // Initialize array list
-            ArrayList<MediaFile> mediaFiles = data.getParcelableArrayListExtra(
-                    FilePickerActivity.MEDIA_FILES
-            );
-            // Get path string
-            String path = mediaFiles.get(0).getPath();
-            // Check condition
-            if (requestCode == 101) {
-                Intent videoEditorActivity = new Intent(getApplicationContext(), VideoEditor.class);
-                videoEditorActivity.putExtra(getString(R.string.video_file_path), path);
-                startActivity(videoEditorActivity);
-            } else {
-                displayShortToast("Unknown error while requesting the video. Request code: "
-                    + requestCode + ".");
-            }
-        } else if(data == null) {
-            displayShortToast("Error: video is null.");
-        } else {
-            displayShortToast("Unknown error while picking the video. Result code: "
-                    + resultCode + ".");
         }
     }
 

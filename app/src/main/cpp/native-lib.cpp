@@ -1,8 +1,87 @@
 #include <jni.h>
 #include <string>
 #include "opencv-utils.h"
+#include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/videoio/registry.hpp>
+#include <opencv2/videoio.hpp>
 #include "android/bitmap.h"
+#include "android/log.h"
+#include <stdio.h>
+#include <iostream>
+#include <exception>
+
+void logDebug(std::string title, std::string str) {
+    std::string output = title + ": " + str;
+    __android_log_write(ANDROID_LOG_DEBUG, "Native lib", output.c_str());
+}
+
+void logDebugVideoBackends() {
+    std::string backendsString = "";
+    std::vector<VideoCaptureAPIs> backends = cv::videoio_registry::getBackends();
+
+    for (int i = 0; i < backends.size(); ++i) {
+        backendsString += cv::videoio_registry::getBackendName(backends[i]) + " ";
+    }
+
+    logDebug("Backends", backendsString);
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_videomagnification_MainActivity_stringFromJNI(
+        JNIEnv* env,
+        jobject /* this */,
+        jstring video_path) {
+
+    const char *videoPathCharArray = env->GetStringUTFChars(video_path, 0);
+    std::string videoPath = std::string(videoPathCharArray);
+
+    VideoCapture video;
+    video.open(videoPath);
+
+    // Check if video opened successfully
+    if (!video.isOpened()) {
+        logDebugVideoBackends();
+        return env->NewStringUTF("Error opening the video!");
+    }
+
+    logDebugVideoBackends();
+    logDebug("Video Capture CODEC", video.getBackendName());
+
+    // Extract video info
+    std::cout << "Codec: " << CAP_PROP_FOURCC << std::endl;
+    int len = video.get(CAP_PROP_FRAME_COUNT);
+    int startIndex = 0;
+    int endIndex = len - 10;
+    int vidHeight = video.get(CAP_PROP_FRAME_HEIGHT);
+    int vidWidth = video.get(CAP_PROP_FRAME_WIDTH);
+    int fr = video.get(CAP_PROP_FPS);
+
+    std::string hello = "Hello from C++. The video is " + std::to_string(len) +
+            " long. It is also " + std::to_string(vidWidth) + "x" + std::to_string(vidHeight) +
+            " and it is at " + std::to_string(fr) + " fps!";
+
+    return env->NewStringUTF(hello.c_str());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void bitmapToMat(JNIEnv *env, jobject bitmap, Mat& dst, jboolean needUnPremultiplyAlpha)
 {
@@ -91,14 +170,6 @@ void matToBitmap(JNIEnv* env, Mat src, jobject bitmap, jboolean needPremultiplyA
         env->ThrowNew(je, "Unknown exception in JNI code {nMatToBitmap}");
         return;
     }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
 }
 
 extern "C" JNIEXPORT jstring JNICALL

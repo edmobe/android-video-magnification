@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
         algorithmRadioButtonId = intent.getIntExtra(
                 getString(R.string.select_an_algorithm), -1);
 
+        displayShortToast(stringFromJNI(videoPath));
+
 //        displayShortToast("Path: " + videoPath + ". Alpha: " + alpha + ". Lambda C: " +
 //                lambdaC + ". Level: " + level +  ". Freq low: " + fl + ". Freq high: " + fh +
 //                ". Sampling: " + sampling + ". Chrom Att: " + chromAtt + ". R1: " + r1 + ". R2: " +
@@ -67,5 +69,6 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI();
+    public native String stringFromJNI(String videoPath);
+
 }
