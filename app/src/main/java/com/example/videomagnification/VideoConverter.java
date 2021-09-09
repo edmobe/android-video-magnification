@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -110,7 +109,8 @@ public class VideoConverter extends AppCompatActivity {
             } catch (Exception e) {
                 ((App)getApplication()).displayShortToast(
                         "Error creating the output video directory!");
-                Log.e("Native lib", "Error creating the folder: " +
+                ((App)getApplication()).logError(
+                        "Native lib", "Error creating the folder: " +
                         e.getLocalizedMessage());
                 return false;
             }
@@ -119,29 +119,36 @@ public class VideoConverter extends AppCompatActivity {
     }
 
     private String convertMp4ToMjpeg(Uri inputVideoUri) {
-        Log.d("Native lib", "Output video URI: " + outputVideoPath);
+        // TODO: Error handling
+        ((App)getApplication()).logDebug(
+                "Native lib", "Output video URI: " + outputVideoPath);
         String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
                 this, inputVideoUri);
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String midVideoPath = Environment.getExternalStorageDirectory().getPath() +
                 outputDir + inputBaseName + ".mjpeg";
         FFmpegSession session1 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath + " -vcodec mjpeg " + midVideoPath);
-        Log.d("Native lib", "Session 1 info: " + session1.getAllLogsAsString());
-        Log.d("Native lib", "Converted video from " + inputVideoPath  +
+                "-y -i " + inputVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
+        ((App)getApplication()).logDebug(
+                "Native lib", "Session 1 info: " + session1.getAllLogsAsString());
+        ((App)getApplication()).logDebug(
+                "Native lib", "Converted video from " + inputVideoPath  +
                 " to " + midVideoPath);
 
         return midVideoPath;
     }
 
     private Uri convertMjpegToAvi(String inputVideoPath) {
+        // TODO: Error handling
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = Environment.getExternalStorageDirectory().getPath() +
                 outputDir + inputBaseName + ".avi";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -vcodec mjpeg " + outputVideoPath);
-        Log.d("Native lib", "Session 2 info: " + session2.getAllLogsAsString());
-        Log.d("Native lib", "Converted video from " + inputVideoPath +
+                "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mjpeg " + outputVideoPath);
+        ((App)getApplication()).logDebug(
+                "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
+        ((App)getApplication()).logDebug(
+                "Native lib", "Converted video from " + inputVideoPath +
                 " to " + outputVideoPath);
         return Uri.parse(outputVideoPath);
     }
