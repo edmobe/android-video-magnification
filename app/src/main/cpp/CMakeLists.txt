@@ -9,6 +9,10 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project("videomagnification")
 
+# OpenMP
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -static-openmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
+
 # OpenCV
 set(OpenCV_STATIC ON)
 set(OpenCV_DIR $ENV{OPENCV_ANDROID}/sdk/native/jni)

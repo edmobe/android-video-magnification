@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#include <omp.h>
 #include "opencv-utils.h"
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -59,10 +60,12 @@ Java_com_example_videomagnification_MainActivity_stringFromJNI(
     int vidHeight = video.get(CAP_PROP_FRAME_HEIGHT);
     int vidWidth = video.get(CAP_PROP_FRAME_WIDTH);
     int fr = video.get(CAP_PROP_FPS);
+    int processors = omp_get_num_procs();
 
     std::string hello = "Hello from C++. The video is " + std::to_string(len) +
             " long. It is also " + std::to_string(vidWidth) + "x" + std::to_string(vidHeight) +
-            " and it is at " + std::to_string(fr) + " fps!";
+            " and it is at " + std::to_string(fr) + " fps! The number of processors is " +
+            std::to_string(processors) + "!";
 
     return env->NewStringUTF(hello.c_str());
 }
