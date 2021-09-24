@@ -2,6 +2,9 @@ package com.example.videomagnification;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,11 +21,21 @@ public class RegionOfInterest extends AppCompatActivity {
     private SeekBar seekBarY;
     private TextView textViewX;
     private TextView textViewY;
+    ImageView imageView;
+
+    private int imageWidth;
+    private int imageHeight;
+
+    private Bitmap thumbnail;
+    private Bitmap preview;
+    private Canvas canvas;
+    private Paint paint;
 
     private Button buttonNext;
 
     private Uri inputVideoUri;
     private Uri thumbnailUri;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,25 +52,36 @@ public class RegionOfInterest extends AppCompatActivity {
 
         MediaMetadataRetriever mMMR = new MediaMetadataRetriever();
         mMMR.setDataSource(getApplicationContext(), thumbnailUri);
-        Bitmap thumbnail = mMMR.getFrameAtTime();
-        ImageView imageView = findViewById(R.id.preview_roi);
+        thumbnail = mMMR.getFrameAtTime();
+
+        paint = new Paint();
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(5);
+        paint.setColor(Color.RED);
+
+        imageWidth = thumbnail.getWidth();
+        imageHeight = thumbnail.getHeight();
+        imageView = findViewById(R.id.preview_roi);
         imageView.setImageBitmap(thumbnail);
 
         seekBarX = findViewById(R.id.seek_roi_x);
         seekBarY = findViewById(R.id.seek_roi_y);
+        seekBarX.setMax(imageWidth);
+        seekBarY.setMax(imageHeight);
 
         textViewX = findViewById(R.id.text_view_roi_x);
         textViewY = findViewById(R.id.text_view_roi_y);
 
         textViewX.setText(String.valueOf(seekBarX.getProgress()));
         textViewY.setText(String.valueOf(seekBarY.getProgress()));
-
+        
         buttonNext = findViewById(R.id.btn_next_roi);
 
         seekBarX.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 textViewX.setText(String.valueOf(seekBarX.getProgress()));
+                updatePreview();
             }
 
             @Override
@@ -71,6 +95,7 @@ public class RegionOfInterest extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 textViewY.setText(String.valueOf(seekBarY.getProgress()));
+                updatePreview();
             }
 
             @Override
@@ -90,5 +115,12 @@ public class RegionOfInterest extends AppCompatActivity {
             videoEditorActivity.putExtra(getString(R.string.roi_y), seekBarY.getProgress());
             startActivity(videoEditorActivity);
         });
+    }
+
+    private void updatePreview() {
+        preview = thumbnail.copy(thumbnail.getConfig(), true);
+        canvas = new Canvas(preview);
+        canvas.drawCircle(seekBarX.getProgress(), seekBarY.getProgress(), 20, paint);
+        imageView.setImageBitmap(preview);
     }
 }

@@ -10,6 +10,7 @@
     <string name="motion">Motion</string>
     <string name="color">Color</string>
     <string name="next">Next</string>
+    <string name="preview">Preview</string>
     <string name="video_preview">Video preview</string>
     <string name="extract">Extract</string>
     <string name="heart_rate">Heart rate</string>
