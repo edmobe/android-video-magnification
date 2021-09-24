@@ -33,7 +33,9 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_example_videomagnification_MainActivity_stringFromJNI(
         JNIEnv* env,
         jobject /* this */,
-        jstring video_path) {
+        jstring video_path,
+        jint roiX,
+        jint roiY) {
 
     const char *videoPathCharArray = env->GetStringUTFChars(video_path, 0);
     std::string videoPath = std::string(videoPathCharArray);
@@ -65,7 +67,8 @@ Java_com_example_videomagnification_MainActivity_stringFromJNI(
     std::string hello = "Hello from C++. The video is " + std::to_string(len) +
             " long. It is also " + std::to_string(vidWidth) + "x" + std::to_string(vidHeight) +
             " and it is at " + std::to_string(fr) + " fps! The number of processors is " +
-            std::to_string(processors) + "!";
+            std::to_string(processors) + "and the ROI is x = " + std::to_string(roiX) +
+            " y = " + std::to_string(roiY) + "!";
 
     return env->NewStringUTF(hello.c_str());
 }

@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private float r2;
     private String extract;
     private int algorithmRadioButtonId;
+    private int roiX;
+    private int roiY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,14 +50,16 @@ public class MainActivity extends AppCompatActivity {
         extract = intent.getStringExtra(getString(R.string.extract));
         algorithmRadioButtonId = intent.getIntExtra(
                 getString(R.string.select_an_algorithm), -1);
+        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
+        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
 
-        ((App) getApplication()).displayShortToast(stringFromJNI(videoPath));
+        ((App) getApplication()).displayShortToast(stringFromJNI(videoPath, roiX, roiY));
     }
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI(String videoPath);
+    public native String stringFromJNI(String videoPath, int roiX, int roiY);
 
 }

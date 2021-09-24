@@ -13,7 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class VideoEditor extends AppCompatActivity {
 
+    private Intent intent;
     private String videoPath;
+    private String thumbnailFileName;
+
     private Button btnNext;
     private RadioGroup radioGroupAlgorithm;
     private RadioGroup radioGroupExtract;
@@ -23,10 +26,9 @@ public class VideoEditor extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_editor);
 
-        Intent intent = getIntent(); // gets the previously created intent
+        intent = getIntent(); // gets the previously created intent
         videoPath = intent.getStringExtra(getString(R.string.video_file_path));
-
-        String thumbnailFileName = intent.getStringExtra(
+        thumbnailFileName = intent.getStringExtra(
                 getString(R.string.video_file_path_thumbnail));
 
         MediaMetadataRetriever mMMR = new MediaMetadataRetriever();
@@ -70,6 +72,10 @@ public class VideoEditor extends AppCompatActivity {
                 videoEditorParametersActivity.putExtra(
                         getString(R.string.select_an_algorithm),
                         selectedAlgorithmOption);
+                videoEditorParametersActivity.putExtra(getString(R.string.roi_x),
+                        intent.getIntExtra(getString(R.string.roi_x), 1));
+                videoEditorParametersActivity.putExtra(getString(R.string.roi_y),
+                        intent.getIntExtra(getString(R.string.roi_y), 1));
                 if (selectedMagnificationOption ==
                         findViewById(R.id.radio_respiratory_rate).getId()) {
                     videoEditorParametersActivity.putExtra(

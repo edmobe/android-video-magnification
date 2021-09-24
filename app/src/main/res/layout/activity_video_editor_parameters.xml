@@ -66,9 +66,9 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/textViewAlpha"
-        app:layout_constraintTop_toBottomOf="@+id/text_extract" />
+        app:layout_constraintTop_toBottomOf="@+id/text_roi" />
 
     <TextView
         android:id="@+id/textView10"
@@ -79,7 +79,7 @@
         android:text="@string/video_file_path"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_extract" />
+        app:layout_constraintTop_toBottomOf="@+id/text_roi" />
 
     <TextView
         android:id="@+id/textView19"
@@ -397,6 +397,18 @@
         app:layout_constraintTop_toBottomOf="@+id/text_temporal_filter" />
 
     <TextView
+        android:id="@+id/text_roi"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/textViewAlpha"
+        app:layout_constraintTop_toBottomOf="@+id/text_extract" />
+
+    <TextView
         android:id="@+id/text_temporal_filter"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -440,5 +452,16 @@
         android:text="@string/null_value"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/roi"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_extract" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

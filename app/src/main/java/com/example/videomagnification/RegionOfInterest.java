@@ -69,12 +69,14 @@ public class RegionOfInterest extends AppCompatActivity {
         seekBarX.setMax(imageWidth);
         seekBarY.setMax(imageHeight);
 
+        updatePreview();
+
         textViewX = findViewById(R.id.text_view_roi_x);
         textViewY = findViewById(R.id.text_view_roi_y);
 
         textViewX.setText(String.valueOf(seekBarX.getProgress()));
         textViewY.setText(String.valueOf(seekBarY.getProgress()));
-        
+
         buttonNext = findViewById(R.id.btn_next_roi);
 
         seekBarX.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

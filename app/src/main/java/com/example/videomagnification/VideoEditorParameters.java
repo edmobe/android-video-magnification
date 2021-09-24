@@ -16,9 +16,13 @@ public class VideoEditorParameters extends AppCompatActivity {
     private Intent intent;
     private String videoPath;
     private String extract;
+    private int roiX;
+    private int roiY;
+
     private TextView videoPathTextView;
     private TextView algorithmTextView;
     private TextView extractTextView;
+    private TextView roiTextView;
     private int algorithmRadioButtonId;
 
     SeekBar[] integerSeeks;
@@ -51,6 +55,8 @@ public class VideoEditorParameters extends AppCompatActivity {
         intent = getIntent(); // gets the previously created intent
         videoPath = intent.getStringExtra(getString(R.string.video_file_path));
         extract = intent.getStringExtra(getString(R.string.extract));
+        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
+        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
     }
 
     private void getAllParameters() {
@@ -90,6 +96,9 @@ public class VideoEditorParameters extends AppCompatActivity {
         videoPathTextView.setText(videoPath);
         extractTextView = findViewById(R.id.text_extract);
         extractTextView.setText(extract);
+        roiTextView = findViewById(R.id.text_roi);
+        String roi = "X = " + roiX + " Y = " + roiY;
+        roiTextView.setText(roi);
 
         // Arrays
         integerSeeks = new SeekBar[]{seekAlpha, seekLambda, seekLevel};
@@ -303,6 +312,10 @@ public class VideoEditorParameters extends AppCompatActivity {
             mainActivityIntent.putExtra(getString(R.string.extract), extract);
             mainActivityIntent.putExtra(getString(R.string.select_an_algorithm),
                     algorithmRadioButtonId);
+            mainActivityIntent.putExtra(getString(R.string.roi_x),
+                    intent.getIntExtra(getString(R.string.roi_x), 1));
+            mainActivityIntent.putExtra(getString(R.string.roi_y),
+                    intent.getIntExtra(getString(R.string.roi_y), 1));
             startActivity(mainActivityIntent);
         });
     }
