@@ -105,6 +105,8 @@ public class VideoConverter extends AppCompatActivity {
         if (!outputsFolder.exists()) {
             try {
                 outputsFolder.mkdir();
+                ((App)getApplication()).logDebug("Create directory",
+                        "Created directory for the first time");
                 return true;
             } catch (Exception e) {
                 ((App)getApplication()).displayShortToast(
@@ -115,15 +117,17 @@ public class VideoConverter extends AppCompatActivity {
                 return false;
             }
         }
+        ((App)getApplication()).logDebug("Create directory",
+                "No need to create the directory");
         return true;
     }
 
     private String convertMp4ToMjpeg(Uri inputVideoUri) {
         // TODO: Error handling
-        ((App)getApplication()).logDebug(
-                "Native lib", "Output video URI: " + outputVideoPath);
         String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
                 this, inputVideoUri);
+        ((App)getApplication()).logDebug(
+                "Native lib", "Input video path: " + inputVideoPath);
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String midVideoPath = Environment.getExternalStorageDirectory().getPath() +
                 outputDir + inputBaseName + ".mjpeg";
