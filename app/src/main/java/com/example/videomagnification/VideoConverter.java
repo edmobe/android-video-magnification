@@ -26,9 +26,10 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class VideoConverter extends AppCompatActivity {
 
     private static final String outputDir = "/video-magnification/";
-    private Uri inputVideoPath;
+    private String fileDir;
+    private Uri inputVideoUri;
     private String midVideoPath;
-    private Uri outputVideoPath;
+    private Uri outputVideoUri;
     private ProgressBar progressBar;
 
     @Override
@@ -38,7 +39,8 @@ public class VideoConverter extends AppCompatActivity {
 
         Intent intent = getIntent(); // gets the previously created intent
         String inputFileName = intent.getStringExtra(getString(R.string.video_file_path));
-        inputVideoPath = Uri.parse(inputFileName);
+
+        inputVideoUri = Uri.parse(inputFileName);
 
         progressBar = findViewById(R.id.progress_convert);
 
@@ -66,12 +68,12 @@ public class VideoConverter extends AppCompatActivity {
                             break;
                         }
                         case 2: {
-                            midVideoPath = convertMp4ToMjpeg(inputVideoPath);
+                            midVideoPath = convertMp4ToMjpeg(inputVideoUri);
                             progressBar.setProgress(60);
                             break;
                         }
                         case 3: {
-                            outputVideoPath = convertMjpegToAvi(midVideoPath);
+                            outputVideoUri = convertMjpegToAvi(midVideoPath);
                             progressBar.setProgress(100);
                             break;
                         }
@@ -90,23 +92,26 @@ public class VideoConverter extends AppCompatActivity {
             @Override
             public void onComplete() {
                 ((App) getApplication()).logDebug("Observable", "Completed!");
-                Intent videoEditorActivity = new Intent(getApplicationContext(),
-                        VideoEditor.class);
-                videoEditorActivity.putExtra(getString(R.string.video_file_path),
-                        outputVideoPath.toString());
-                startActivity(videoEditorActivity);
+                Intent roiActivity = new Intent(getApplicationContext(),
+                        RegionOfInterest.class);
+                roiActivity.putExtra(getString(R.string.video_file_path),
+                        outputVideoUri.toString());
+                roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
+                        inputVideoUri.toString());
+                startActivity(roiActivity);
             }
         });
     }
 
     private boolean createDirectoryIfNeeded() {
-        File outputsFolder = new File(
-                Environment.getExternalStorageDirectory().getPath() + outputDir);
+        fileDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES).getPath() + outputDir;
+        File outputsFolder = new File(fileDir);
         if (!outputsFolder.exists()) {
             try {
                 outputsFolder.mkdir();
                 ((App)getApplication()).logDebug("Create directory",
-                        "Created directory for the first time");
+                        "Created directory for the first time: " + fileDir);
                 return true;
             } catch (Exception e) {
                 ((App)getApplication()).displayShortToast(
@@ -129,8 +134,7 @@ public class VideoConverter extends AppCompatActivity {
         ((App)getApplication()).logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
-        String midVideoPath = Environment.getExternalStorageDirectory().getPath() +
-                outputDir + inputBaseName + ".mjpeg";
+        String midVideoPath = fileDir + inputBaseName + ".mjpeg";
         FFmpegSession session1 = FFmpegKit.execute(
                 "-y -i " + inputVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
         ((App)getApplication()).logDebug(
@@ -145,8 +149,7 @@ public class VideoConverter extends AppCompatActivity {
     private Uri convertMjpegToAvi(String inputVideoPath) {
         // TODO: Error handling
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
-        String outputVideoPath = Environment.getExternalStorageDirectory().getPath() +
-                outputDir + inputBaseName + ".avi";
+        String outputVideoPath = fileDir + inputBaseName + ".avi";
         FFmpegSession session2 = FFmpegKit.execute(
                 "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mjpeg " + outputVideoPath);
         ((App)getApplication()).logDebug(

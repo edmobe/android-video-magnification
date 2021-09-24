@@ -5,14 +5,26 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.apache.commons.io.FilenameUtils;
 
 public class App extends Application {
     public void displayShortToast(String string) {
         Toast.makeText(getApplicationContext(),
                 string,
                 Toast.LENGTH_SHORT).show();
+    }
+
+    public String getNameFromUri(Uri contentUri) {
+        Cursor c = getContentResolver().query(contentUri,
+                null, null, null, null);
+        c.moveToFirst();
+        String name = c.getString(c.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+        c.close();
+        return FilenameUtils.getBaseName(name);
     }
 
     public String getFullPathFromUri(Uri contentUri) {

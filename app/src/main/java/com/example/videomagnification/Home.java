@@ -18,7 +18,7 @@ public class Home extends AppCompatActivity {
     private Button btnOpen;
     private static final int REQUEST_PERMISSIONS = 1;
     private static final int PICK_AVI_VIDEO = 2;
-    private Uri inputVideoPath;
+    private Uri inputVideoUri;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     private boolean arePermissionsGranted() {
@@ -62,11 +62,11 @@ public class Home extends AppCompatActivity {
                 // The result data contains a URI for the document or directory that
                 // the user selected.
                 if (resultData != null) {
-                    inputVideoPath = resultData.getData();
+                    inputVideoUri = resultData.getData();
                     Intent videoConverterActivity = new Intent(getApplicationContext(),
                             VideoConverter.class);
                     videoConverterActivity.putExtra(getString(R.string.video_file_path),
-                            inputVideoPath.toString());
+                            inputVideoUri.toString());
                     startActivity(videoConverterActivity);
                 } else {
                     ((App)getApplication()).displayShortToast(

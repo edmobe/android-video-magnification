@@ -2,9 +2,9 @@ package com.example.videomagnification;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
+import android.media.MediaMetadataRetriever;
+import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
@@ -26,9 +26,13 @@ public class VideoEditor extends AppCompatActivity {
         Intent intent = getIntent(); // gets the previously created intent
         videoPath = intent.getStringExtra(getString(R.string.video_file_path));
 
-        Bitmap thumbnail = ThumbnailUtils.createVideoThumbnail(videoPath,
-                MediaStore.Images.Thumbnails.MINI_KIND);
-        ImageView imageView = (ImageView) findViewById(R.id.videoPreview);
+        String thumbnailFileName = intent.getStringExtra(
+                getString(R.string.video_file_path_thumbnail));
+
+        MediaMetadataRetriever mMMR = new MediaMetadataRetriever();
+        mMMR.setDataSource(getApplicationContext(), Uri.parse(thumbnailFileName));
+        Bitmap thumbnail = mMMR.getFrameAtTime();
+        ImageView imageView = findViewById(R.id.preview_roi);
         imageView.setImageBitmap(thumbnail);
 
         radioGroupAlgorithm = findViewById(R.id.radio_group_algorithm);
@@ -47,7 +51,7 @@ public class VideoEditor extends AppCompatActivity {
             }
         });
 
-        btnNext = findViewById(R.id.btn_next);
+        btnNext = findViewById(R.id.btn_next_editor);
         btnNext.setOnClickListener(v -> {
             int selectedAlgorithmOption = radioGroupAlgorithm.getCheckedRadioButtonId();
             int selectedMagnificationOption = radioGroupExtract.getCheckedRadioButtonId();
