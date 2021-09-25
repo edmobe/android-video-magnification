@@ -65,10 +65,10 @@ Java_com_example_videomagnification_MainActivity_stringFromJNI(
     int processors = omp_get_num_procs();
 
     std::string hello = "Hello from C++. The video is " + std::to_string(len) +
-            " long. It is also " + std::to_string(vidWidth) + "x" + std::to_string(vidHeight) +
+            " frames long. It is also " + std::to_string(vidWidth) + "x" + std::to_string(vidHeight) +
             " and it is at " + std::to_string(fr) + " fps! The number of processors is " +
-            std::to_string(processors) + "and the ROI is x = " + std::to_string(roiX) +
-            " y = " + std::to_string(roiY) + "!";
+            std::to_string(processors) + " and the ROI is (x = " + std::to_string(roiX) +
+            " y = " + std::to_string(roiY) + ")!";
 
     return env->NewStringUTF(hello.c_str());
 }
