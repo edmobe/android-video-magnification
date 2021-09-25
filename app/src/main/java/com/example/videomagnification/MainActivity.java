@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.databinding.ActivityMainBinding;
 
+import org.apache.commons.io.FilenameUtils;
+
 public class MainActivity extends AppCompatActivity {
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -53,13 +55,15 @@ public class MainActivity extends AppCompatActivity {
         roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
         roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
 
-        ((App) getApplication()).displayShortToast(stringFromJNI(videoPath, roiX, roiY));
+        int state = amplifySpatialLpyrTemporalIdeal(videoPath, FilenameUtils.getPath(videoPath),
+                100, 10, 100, 120, 600, 0);
+        ((App) getApplication()).displayShortToast(String.valueOf(state));
+
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI(String videoPath, int roiX, int roiY);
+    public native int amplifySpatialLpyrTemporalIdeal(String videoIn, String outDir,
+                                                      double alpha, double lambda_c,
+                                                      double fl, double fh, double samplingRate,
+                                                      double chromAttenuation);
 
 }

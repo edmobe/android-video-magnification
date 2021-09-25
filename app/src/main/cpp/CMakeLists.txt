@@ -30,8 +30,11 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             opencv-utils.cpp
-             native-lib.cpp )
+            jniLogs.cpp
+            im_conv.cpp
+            lpyr_functions.cpp
+            processing_functions.cpp
+            native-lib.cpp )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

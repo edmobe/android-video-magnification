@@ -1,214 +1,52 @@
-#include <jni.h>
 #include <string>
 #include <omp.h>
-#include "opencv-utils.h"
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include <opencv2/core.hpp>
-#include <opencv2/videoio/registry.hpp>
 #include <opencv2/videoio.hpp>
 #include "android/bitmap.h"
-#include "android/log.h"
+
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 
-void logDebug(std::string title, std::string str) {
-    std::string output = title + ": " + str;
-    __android_log_write(ANDROID_LOG_DEBUG, "Video Magnification (native lib)", output.c_str());
-}
+#include "jniLogs.h"
+#include "processing_functions.h"
 
-void logDebugVideoBackends() {
-    std::string backendsString = "";
-    std::vector<VideoCaptureAPIs> backends = cv::videoio_registry::getBackends();
+/**
+* Spatial Filtering : Laplacian pyramid
+* Temporal Filtering : Ideal bandpass
+*
+* Copyright(c) 2021 Tecnologico de Costa Rica.
+*
+* Authors: Eduardo Moya Bello, Ki - Sung Lim
+* Date : June 2021
+*
+* This work was based on a project EVM
+*
+* Original copyright(c) 2011 - 2012 Massachusetts Institute of Technology,
+* Quanta Research Cambridge, Inc.
+*
+* Original authors : Hao - yu Wu, Michael Rubinstein, Eugene Shih,
+* License : Please refer to the LICENCE file (MIT license)
+* Original date : June 2012
+*/
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIdeal(
+        JNIEnv *env, jobject, jstring video_in, jstring out_dir, jdouble alpha,
+        jdouble lambda_c, jdouble fl, jdouble fh, jdouble sampling_rate,
+        jdouble chrom_attenuation) {
 
-    for (int i = 0; i < backends.size(); ++i) {
-        backendsString += cv::videoio_registry::getBackendName(backends[i]) + " ";
-    }
+    const char *videoInCharArr = env->GetStringUTFChars(video_in, 0);
+    std::string inFile = std::string(videoInCharArr);
+    const char *outputDirCharArr = env->GetStringUTFChars(out_dir, 0);
+    std::string outDir = std::string(outputDirCharArr);
 
-    logDebug("Backends", backendsString);
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_stringFromJNI(
-        JNIEnv* env,
-        jobject /* this */,
-        jstring video_path,
-        jint roiX,
-        jint roiY) {
-
-    const char *videoPathCharArray = env->GetStringUTFChars(video_path, 0);
-    std::string videoPath = std::string(videoPathCharArray);
-
-    logDebug("File path", videoPathCharArray);
-
-    VideoCapture video;
-    video.open(videoPathCharArray);
-
-    // Check if video opened successfully
-    if (!video.isOpened()) {
-        logDebugVideoBackends();
-        return env->NewStringUTF("Error opening the video!");
-    }
-
-    logDebugVideoBackends();
-    logDebug("Video Capture CODEC", video.getBackendName());
-
-    // Extract video info
-    std::cout << "Codec: " << CAP_PROP_FOURCC << std::endl;
-    int len = video.get(CAP_PROP_FRAME_COUNT);
-    int startIndex = 0;
-    int endIndex = len - 10;
-    int vidHeight = video.get(CAP_PROP_FRAME_HEIGHT);
-    int vidWidth = video.get(CAP_PROP_FRAME_WIDTH);
-    int fr = video.get(CAP_PROP_FPS);
-    int processors = omp_get_num_procs();
-
-    std::string hello = "Hello from C++. The video is " + std::to_string(len) +
-            " frames long. It is also " + std::to_string(vidWidth) + "x" + std::to_string(vidHeight) +
-            " and it is at " + std::to_string(fr) + " fps! The number of processors is " +
-            std::to_string(processors) + " and the ROI is (x = " + std::to_string(roiX) +
-            " y = " + std::to_string(roiY) + ")!";
-
-    return env->NewStringUTF(hello.c_str());
-}
+    logDebug("Video reception - Input file", inFile);
 
 
+    amplify_spatial_lpyr_temporal_ideal(inFile, outDir, alpha, lambda_c, fl, fh, sampling_rate,
+                                        chrom_attenuation);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void bitmapToMat(JNIEnv *env, jobject bitmap, Mat& dst, jboolean needUnPremultiplyAlpha)
-{
-    AndroidBitmapInfo  info;
-    void*              pixels = 0;
-
-    try {
-        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
-        CV_Assert( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
-                   info.format == ANDROID_BITMAP_FORMAT_RGB_565 );
-        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
-        CV_Assert( pixels );
-        dst.create(info.height, info.width, CV_8UC4);
-        if( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 )
-        {
-            Mat tmp(info.height, info.width, CV_8UC4, pixels);
-            if(needUnPremultiplyAlpha) cvtColor(tmp, dst, COLOR_mRGBA2RGBA);
-            else tmp.copyTo(dst);
-        } else {
-            // info.format == ANDROID_BITMAP_FORMAT_RGB_565
-            Mat tmp(info.height, info.width, CV_8UC2, pixels);
-            cvtColor(tmp, dst, COLOR_BGR5652RGBA);
-        }
-        AndroidBitmap_unlockPixels(env, bitmap);
-        return;
-    } catch(const cv::Exception& e) {
-        AndroidBitmap_unlockPixels(env, bitmap);
-        jclass je = env->FindClass("java/lang/Exception");
-        env->ThrowNew(je, e.what());
-        return;
-    } catch (...) {
-        AndroidBitmap_unlockPixels(env, bitmap);
-        jclass je = env->FindClass("java/lang/Exception");
-        env->ThrowNew(je, "Unknown exception in JNI code {nBitmapToMat}");
-        return;
-    }
-}
-
-void matToBitmap(JNIEnv* env, Mat src, jobject bitmap, jboolean needPremultiplyAlpha)
-{
-    AndroidBitmapInfo  info;
-    void*              pixels = 0;
-
-    try {
-        CV_Assert( AndroidBitmap_getInfo(env, bitmap, &info) >= 0 );
-        CV_Assert( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 ||
-                   info.format == ANDROID_BITMAP_FORMAT_RGB_565 );
-        CV_Assert( src.dims == 2 && info.height == (uint32_t)src.rows && info.width == (uint32_t)src.cols );
-        CV_Assert( src.type() == CV_8UC1 || src.type() == CV_8UC3 || src.type() == CV_8UC4 );
-        CV_Assert( AndroidBitmap_lockPixels(env, bitmap, &pixels) >= 0 );
-        CV_Assert( pixels );
-        if( info.format == ANDROID_BITMAP_FORMAT_RGBA_8888 )
-        {
-            Mat tmp(info.height, info.width, CV_8UC4, pixels);
-            if(src.type() == CV_8UC1)
-            {
-                cvtColor(src, tmp, COLOR_GRAY2RGBA);
-            } else if(src.type() == CV_8UC3){
-                cvtColor(src, tmp, COLOR_RGB2RGBA);
-            } else if(src.type() == CV_8UC4){
-                if(needPremultiplyAlpha) cvtColor(src, tmp, COLOR_RGBA2mRGBA);
-                else src.copyTo(tmp);
-            }
-        } else {
-            // info.format == ANDROID_BITMAP_FORMAT_RGB_565
-            Mat tmp(info.height, info.width, CV_8UC2, pixels);
-            if(src.type() == CV_8UC1)
-            {
-                cvtColor(src, tmp, COLOR_GRAY2BGR565);
-            } else if(src.type() == CV_8UC3){
-                cvtColor(src, tmp, COLOR_RGB2BGR565);
-            } else if(src.type() == CV_8UC4){
-                cvtColor(src, tmp, COLOR_RGBA2BGR565);
-            }
-        }
-        AndroidBitmap_unlockPixels(env, bitmap);
-        return;
-    } catch(const cv::Exception& e) {
-        AndroidBitmap_unlockPixels(env, bitmap);
-        jclass je = env->FindClass("java/lang/Exception");
-        env->ThrowNew(je, e.what());
-        return;
-    } catch (...) {
-        AndroidBitmap_unlockPixels(env, bitmap);
-        jclass je = env->FindClass("java/lang/Exception");
-        env->ThrowNew(je, "Unknown exception in JNI code {nMatToBitmap}");
-        return;
-    }
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_flip(
-        JNIEnv* env,
-        jobject p_this,
-        jobject bitmapIn,
-        jobject bitmapOut) {
-    Mat src;
-    bitmapToMat(env, bitmapIn, src, false);
-    // NOTE bitmapToMat returns Mat in RGBA format, if needed convert to BGRA using cvtColor
-
-    myFlip(src);
-
-    // NOTE matToBitmap expects Mat in GRAY/RGB(A) format, if needed convert using cvtColor
-    matToBitmap(env, src, bitmapOut, false);
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_MainActivity_blur(
-        JNIEnv* env,
-        jobject p_this,
-        jobject bitmapIn,
-        jobject bitmapOut,
-        jfloat sigma) {
-    Mat src;
-    bitmapToMat(env, bitmapIn, src, false);
-    // NOTE bitmapToMat returns Mat in RGBA format, if needed convert to BGRA using cvtColor
-
-    myBlur(src, sigma);
-
-    // NOTE matToBitmap expects Mat in GRAY/RGB(A) format, if needed convert using cvtColor
-    matToBitmap(env, src, bitmapOut, false);
+    return 0;
 }
