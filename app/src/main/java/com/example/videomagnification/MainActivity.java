@@ -1,6 +1,5 @@
 package com.example.videomagnification;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,26 +37,31 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        Intent intent = getIntent(); // gets the previously created intent
-        videoPath = intent.getStringExtra(getString(R.string.video_file_path));
-        alpha = intent.getIntExtra(getString(R.string.alpha), 1);
-        lambdaC = intent.getIntExtra(getString(R.string.lambda_c), 1);
-        level = intent.getIntExtra(getString(R.string.level), 1);
-        fl = intent.getFloatExtra(getString(R.string.low_frequency), 0.1f);
-        fh = intent.getFloatExtra(getString(R.string.high_frequency), 0.2f);
-        sampling = intent.getFloatExtra(getString(R.string.sampling_rate), 0.1f);
-        chromAtt = intent.getFloatExtra(getString(R.string.chrom_attenuation), 0.1f);
-        r1 = intent.getFloatExtra(getString(R.string.r1), 0.1f);
-        r2 = intent.getFloatExtra(getString(R.string.r2), 0.1f);
-        extract = intent.getStringExtra(getString(R.string.extract));
-        algorithmRadioButtonId = intent.getIntExtra(
-                getString(R.string.select_an_algorithm), -1);
-        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
-        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
+//        Intent intent = getIntent(); // gets the previously created intent
+//        videoPath = intent.getStringExtra(getString(R.string.video_file_path));
+//        alpha = intent.getIntExtra(getString(R.string.alpha), 1);
+//        lambdaC = intent.getIntExtra(getString(R.string.lambda_c), 1);
+//        level = intent.getIntExtra(getString(R.string.level), 1);
+//        fl = intent.getFloatExtra(getString(R.string.low_frequency), 0.1f);
+//        fh = intent.getFloatExtra(getString(R.string.high_frequency), 0.2f);
+//        sampling = intent.getFloatExtra(getString(R.string.sampling_rate), 0.1f);
+//        chromAtt = intent.getFloatExtra(getString(R.string.chrom_attenuation), 0.1f);
+//        r1 = intent.getFloatExtra(getString(R.string.r1), 0.1f);
+//        r2 = intent.getFloatExtra(getString(R.string.r2), 0.1f);
+//        extract = intent.getStringExtra(getString(R.string.extract));
+//        algorithmRadioButtonId = intent.getIntExtra(
+//                getString(R.string.select_an_algorithm), -1);
+//        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
+//        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
+//
+//        int state = amplifySpatialLpyrTemporalIdeal(videoPath, FilenameUtils.getPath(videoPath),
+//                100, 10, 100, 120, 600, 0);
+//        ((App) getApplication()).displayShortToast(String.valueOf(state));
+
+        videoPath = "/storage/emulated/0/Pictures/video-magnification/face.avi";
 
         int state = amplifySpatialLpyrTemporalIdeal(videoPath, FilenameUtils.getPath(videoPath),
                 100, 10, 100, 120, 600, 0);
-        ((App) getApplication()).displayShortToast(String.valueOf(state));
 
     }
 
