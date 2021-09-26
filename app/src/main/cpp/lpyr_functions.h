@@ -10,7 +10,7 @@ int maxPyrHt(int frameWidth, int frameHeight, int filterSizeX, int filterSizeY);
 
 vector<Mat> buildLpyrfromGauss(Mat image, int levels);
 
-vector<vector<Mat>> build_Lpyr_stack(string vidFile, int startIndex, int endIndex);
+vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex, int endIndex);
 
 Mat reconLpyr(vector<Mat> lpyr);
 

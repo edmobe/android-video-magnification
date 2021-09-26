@@ -10,8 +10,10 @@
 #include <vector>
 #include <numeric>
 #include <cmath>
+#include <jni.h>
 
 #include "im_conv.h"
+#include "jniLogs.h"
 
 using namespace std;
 using namespace cv;
@@ -60,7 +62,7 @@ vector<Mat> buildLpyrfromGauss(Mat image, int levels) {
     return laplacianPyramid;
 }
 
-vector<vector<Mat>> build_Lpyr_stack(string vidFile, int startIndex, int endIndex) {
+vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex, int endIndex) {
     // Read video
     // Create a VideoCapture object and open the input file
     // If the input is the web camera, pass 0 instead of the video file name
@@ -94,6 +96,10 @@ vector<vector<Mat>> build_Lpyr_stack(string vidFile, int startIndex, int endInde
 
         vector<Mat> pyr_output = buildLpyrfromGauss(ntscframe, max_ht);
         pyr_stack[i] = pyr_output;
+
+        logDebugAndShowUser(env, "Spatial processing - Building LPYR stack", "Frame " +
+                            to_string(i + 1) + " of " + to_string(endIndex));
+
     }
 
     return pyr_stack;

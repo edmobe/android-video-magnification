@@ -40,7 +40,7 @@ constexpr auto BAR_WIDTH = 70;
 * License : Please refer to the LICENCE file (MIT license)
 * Original date : June 2012
 */
-int amplify_spatial_lpyr_temporal_ideal(string inFile, string outDir, double alpha,
+int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                         double lambda_c, double fl, double fh, double samplingRate,
                                         double chromAttenuation) {
 
@@ -96,7 +96,13 @@ int amplify_spatial_lpyr_temporal_ideal(string inFile, string outDir, double alp
     logDebug("Video reception - Video info (FPS)", to_string(fr));
     logDebug("Video reception - Maximum pyramid height", to_string(max_ht));
 
-//    vector<vector<Mat>> pyr_stack = build_Lpyr_stack(inFile, startIndex, endIndex);
+    updateProgress(env, 5);
+
+    vector<vector<Mat>> pyr_stack = build_Lpyr_stack(env, inFile, startIndex, endIndex);
+
+    updateProgress(env, 15);
+
+    logDebug("Spatial processing - LPYR stack", "Finished building!");
 //    vector<vector<Mat>> filteredStack = ideal_bandpassing_lpyr(pyr_stack, 3, fl, fh, samplingRate);
 //
 //    Scalar colorAmp(alpha, alpha * chromAttenuation, alpha * chromAttenuation);

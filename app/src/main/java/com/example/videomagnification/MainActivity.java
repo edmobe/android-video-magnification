@@ -1,6 +1,10 @@
 package com.example.videomagnification;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -8,11 +12,20 @@ import com.example.videomagnification.databinding.ActivityMainBinding;
 
 import org.apache.commons.io.FilenameUtils;
 
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class MainActivity extends AppCompatActivity {
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
     }
+
+    public static TextView magnifierLog;
+    public static ProgressBar progress;
 
     private ActivityMainBinding binding;
     private String videoPath;
@@ -37,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        magnifierLog = findViewById(R.id.text_magnify_log);
+        progress = findViewById(R.id.progress_magnify);
+
 //        Intent intent = getIntent(); // gets the previously created intent
 //        videoPath = intent.getStringExtra(getString(R.string.video_file_path));
 //        alpha = intent.getIntExtra(getString(R.string.alpha), 1);
@@ -56,13 +72,62 @@ public class MainActivity extends AppCompatActivity {
 //
 //        int state = amplifySpatialLpyrTemporalIdeal(videoPath, FilenameUtils.getPath(videoPath),
 //                100, 10, 100, 120, 600, 0);
-//        ((App) getApplication()).displayShortToast(String.valueOf(state));
+
 
         videoPath = "/storage/emulated/0/Pictures/video-magnification/face.avi";
 
-        int state = amplifySpatialLpyrTemporalIdeal(videoPath, FilenameUtils.getPath(videoPath),
-                100, 10, 100, 120, 600, 0);
+        Observable<Integer> observable = Observable.create(emitter -> {
+            emitter.onNext(1);
+            emitter.onComplete();
+        });
 
+        observable
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(new Observer<Integer>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) { }
+
+                    @Override
+                    public void onNext(@NonNull Integer integer) {
+                        // TODO: Error handling
+                        ((App) getApplication()).logDebug("Observable", integer.toString());
+                        if (integer == 1) {
+                            int state = amplifySpatialLpyrTemporalIdeal(videoPath,
+                                    FilenameUtils.getPath(videoPath),
+                                    100, 10, 100, 120, 600,
+                                    0);
+                            App.displayShortToast(String.valueOf(state));
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        App.displayShortToast(
+                                "Error while processing the video!"
+                        );
+                        ((App) getApplication()).logError("Video processing - Error",
+                                e.getLocalizedMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        ((App) getApplication()).logDebug(
+                                "Video processing - Observable", "Completed!");
+                    }
+                });
+
+    }
+
+    public static void updateMagnifierLog(String string) {
+        boolean handler = new Handler(Looper.getMainLooper()).post(() -> {
+            MainActivity.magnifierLog.setText(string);
+        });
+    }
+
+    public static void updateProgress(int progress) {
+        boolean handler = new Handler(Looper.getMainLooper()).post(() -> {
+            MainActivity.progress.setProgress(progress);
+        });
     }
 
     public native int amplifySpatialLpyrTemporalIdeal(String videoIn, String outDir,

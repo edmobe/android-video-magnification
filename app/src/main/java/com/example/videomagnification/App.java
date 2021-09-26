@@ -1,8 +1,11 @@
 package com.example.videomagnification;
 
 import android.app.Application;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -12,10 +15,25 @@ import android.widget.Toast;
 import org.apache.commons.io.FilenameUtils;
 
 public class App extends Application {
-    public void displayShortToast(String string) {
-        Toast.makeText(getApplicationContext(),
-                string,
-                Toast.LENGTH_SHORT).show();
+
+    private static boolean handler;
+    private static Context context;
+
+    public void onCreate() {
+        super.onCreate();
+        App.context = getApplicationContext();
+    }
+
+    public static Context getAppContext() {
+        return App.context;
+    }
+
+    public static void displayShortToast(String string) {
+        handler = new Handler(Looper.getMainLooper()).post(() -> {
+            Toast toast = Toast.makeText(getAppContext(),
+                    string, Toast.LENGTH_SHORT);
+            toast.show();
+        });
     }
 
     public String getNameFromUri(Uri contentUri) {

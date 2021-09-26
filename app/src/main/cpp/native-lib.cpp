@@ -33,9 +33,14 @@
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIdeal(
-        JNIEnv *env, jobject, jstring video_in, jstring out_dir, jdouble alpha,
+        JNIEnv *env, jobject,
+        jstring video_in, jstring out_dir, jdouble alpha,
         jdouble lambda_c, jdouble fl, jdouble fh, jdouble sampling_rate,
         jdouble chrom_attenuation) {
+
+    //getting set text method
+    jclass clazz = env->FindClass("android/widget/TextView");
+    jmethodID setText = env->GetMethodID(clazz, "setText", "(Ljava/lang/CharSequence;)V");
 
     const char *videoInCharArr = env->GetStringUTFChars(video_in, 0);
     std::string inFile = std::string(videoInCharArr);
@@ -44,9 +49,8 @@ Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIdeal
 
     logDebug("Video reception - Input file", inFile);
 
+    int status = amplify_spatial_lpyr_temporal_ideal(env, inFile, outDir, alpha, lambda_c, fl, fh,
+                                                     sampling_rate, chrom_attenuation);
 
-    amplify_spatial_lpyr_temporal_ideal(inFile, outDir, alpha, lambda_c, fl, fh, sampling_rate,
-                                        chrom_attenuation);
-
-    return 0;
+    return status;
 }
