@@ -218,7 +218,7 @@
         android:layout_marginStart="100dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="50dp"
-        android:max="10000"
+        android:max="100000"
         android:min="10"
         android:progress="10"
         app:layout_constraintEnd_toEndOf="parent"

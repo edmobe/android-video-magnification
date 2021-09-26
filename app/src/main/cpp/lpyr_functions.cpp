@@ -134,7 +134,11 @@ Mat reconLpyr(vector<Mat> lpyr) {
     return res;
 }
 
-vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, double wl, double wh, double samplingRate) {
+vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& input,
+                                           int dim, double wl, double wh, double samplingRate) {
+
+    logDebugAndShowUser(env, "Temporal processing", "Starting temporal analysis");
+
     /*
     Comprobation of the dimention
     It is so 'dim' doesn't excede the actual dimension of the input
@@ -153,7 +157,6 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, 
     // Represents time
     int n = (int)input.size();
 
-
     // Temporal vector that's constructed for the mask
     // iota is used to fill the vector with a integer sequence
     // [0, 1, 2, ..., n]
@@ -170,6 +173,8 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, 
     // Sum of total pixels to be processed
     int total_pixels = 0;
     int levels = (int)input[0].size();
+
+    updateProgress(env, 20);
 
 #pragma omp parallel for
     for (int level = 0; level < levels; level++) {
@@ -200,7 +205,8 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, 
     */
     Mat tmp(total_pixels, n, CV_64FC1);
 
-    // 0.155 s elapsed since start
+    updateProgress(env, 25);
+    logDebugAndShowUser(env, "Temporal processing", "Populating the DFT matrix");
 
     // Here we populate the forementioned matrix
     // 14.99 s
@@ -222,6 +228,10 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, 
         }
     }
 
+    updateProgress(env, 45);
+
+    logDebugAndShowUser(env, "Temporal processing", "Calculating the DFT");
+
     /*
     cout << "0: " << tmp.at<double>(0, 0) << endl;
     cout << "1: " << tmp.at<double>(0, 1) << endl;
@@ -239,6 +249,11 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, 
 
     dft(tmp, tmp, DFT_ROWS | DFT_COMPLEX_OUTPUT);
 
+    updateProgress(env, 55);
+
+    logDebugAndShowUser(env, "Temporal processing",
+                        "Filtering the video matrix with a mask");
+
     // Filtering the video matrix with a mask
 
 #pragma omp parallel for
@@ -252,9 +267,19 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, 
         }
     }
 
+    updateProgress(env, 60);
+
+    logDebugAndShowUser(env, "Temporal processing",
+                        "Calculating the IDFT");
+
     // 1-D inverse DFT applied for every row, complex output
-    // Only the real part is importante
+    // Only the real part is important
     idft(tmp, tmp, DFT_ROWS | DFT_COMPLEX_INPUT | DFT_SCALE);
+
+    updateProgress(env, 70);
+
+    logDebugAndShowUser(env, "Temporal processing",
+                        "Retrieving matrix data");
 
     // Reording the matrix to a vector of matrixes,
     // contrary of what was done for temp_dft

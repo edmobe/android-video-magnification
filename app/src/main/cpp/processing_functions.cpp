@@ -45,8 +45,11 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
                                         double chromAttenuation) {
 
     double itime, etime;
-
     itime = omp_get_wtime();
+
+    /*
+     * ================= VIDEO RECEPTION =================
+     * */
 
     string name;
     string delimiter = "/";
@@ -98,109 +101,119 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
 
     updateProgress(env, 5);
 
+    /*
+     * ================= SPATIAL PROCESSING =================
+     * */
+
     vector<vector<Mat>> pyr_stack = build_Lpyr_stack(env, inFile, startIndex, endIndex);
-
     updateProgress(env, 15);
-
     logDebug("Spatial processing - LPYR stack", "Finished building!");
-//    vector<vector<Mat>> filteredStack = ideal_bandpassing_lpyr(pyr_stack, 3, fl, fh, samplingRate);
-//
-//    Scalar colorAmp(alpha, alpha * chromAttenuation, alpha * chromAttenuation);
-//
-//    // Amplify color channels in NTSC
-//#pragma omp parallel for shared(filteredStack, colorAmp)
-//    for (int frame = 0; frame < filteredStack.size(); frame++) {
-//#pragma omp parallel for shared(filteredStack, colorAmp)
-//        for (int levelFrame = 0; levelFrame < filteredStack[frame].size(); levelFrame++) {
-//            multiply(filteredStack[frame][levelFrame], colorAmp, filteredStack[frame][levelFrame]);
-//        }
-//    }
-//
-//    // Render on the input video to make the output video
-//    // Define the codec and create VideoWriter object
-//    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
-//                         Size(vidWidth, vidHeight));
-//
-//    int k = 0;
-//
-//    float progress = 0;
-//    for (int i = 0; i < BAR_WIDTH; ++i) {
-//        std::cout << "=";
-//    }
-//    std::cout << std::endl;
-//    std::cout << "Processing " << inFile << "." << endl;
-//
-//    for (int i = startIndex; i < endIndex; i++) {
-//        Mat frame, rgbframe, ntscframe, filt_ind, filtered, out_frame;
-//        // Capture frame-by-frame
-//        video >> frame;
-//
-//        //imshow("Original", frame);
-//
-//        // Color conversion GBR 2 NTSC
-//        cvtColor(frame, rgbframe, COLOR_BGR2RGB);
-//        rgbframe = im2double(rgbframe);
-//        ntscframe = rgb2ntsc(rgbframe);
-//
-//        //imshow("Converted", ntscframe);
-//
-//        filt_ind = filteredStack[k][0];
-//        //imshow("Filtered stack", filt_ind);
-//
-//        Size img_size(vidWidth, vidHeight);//the dst image size,e.g.100x100
-//        resize(filt_ind, filtered, img_size, 0, 0, INTER_CUBIC);//resize image
-//
-//        filtered = filtered + ntscframe;
-//        //imshow("Filtered", filtered);
-//
-//        frame = ntsc2rgb(filtered);
-//        //imshow("Frame", frame);
-//
-//#pragma omp parallel for
-//        for (int x = 0; x < frame.rows; x++) {
-//            for (int y = 0; y < frame.cols; y++) {
-//                Vec3d this_pixel = frame.at<Vec3d>(x, y);
-//                for (int z = 0; z < 3; z++) {
-//                    if (this_pixel[z] > 1) {
-//                        this_pixel[z] = 1;
-//                    }
-//
-//                    if (this_pixel[z] < 0) {
-//                        this_pixel[z] = 0;
-//                    }
-//                }
-//
-//                frame.at<Vec3d>(x, y) = this_pixel;
-//            }
-//        }
-//
-//        rgbframe = im2uint8(frame);
-//        //imshow("Rgb frame", rgbframe);
-//
-//        cvtColor(rgbframe, out_frame, COLOR_RGB2BGR);
-//        //imshow("Out frame", out_frame);
-//
-//        // Write the frame into the file 'outcpp.avi'
-//        videoOut.write(out_frame);
-//
-//        k++;
-//    }
-//
-//    etime = omp_get_wtime();
-//
-//    // When everything done, release the video capture and write object
-//    video.release();
-//    videoOut.release();
-//
-//    std::cout << std::endl;
-//    std::cout << "Finished. Elapsed time: " << etime - itime << " secs." << std::endl;
-//    for (int i = 0; i < BAR_WIDTH; ++i) {
-//        std::cout << "=";
-//    }
-//    std::cout << std::endl;
-//
-//    // Closes all the frames
-//    cv::destroyAllWindows();
+
+    /*
+     * ================= TEMPORAL PROCESSING =================
+     * */
+    vector<vector<Mat>> filteredStack = ideal_bandpassing_lpyr(env, pyr_stack, 3, fl, fh,
+                                                               samplingRate);
+
+    updateProgress(env, 70);
+
+    logDebugAndShowUser(env, "Video output",
+                        "Preparing output video");
+
+    /*
+     * ================= VIDEO OUTPUT =================
+     * */
+    Scalar colorAmp(alpha, alpha * chromAttenuation, alpha * chromAttenuation);
+
+    // Amplify color channels in NTSC
+#pragma omp parallel for shared(filteredStack, colorAmp)
+    for (int frame = 0; frame < filteredStack.size(); frame++) {
+#pragma omp parallel for shared(filteredStack, colorAmp)
+        for (int levelFrame = 0; levelFrame < filteredStack[frame].size(); levelFrame++) {
+            multiply(filteredStack[frame][levelFrame], colorAmp, filteredStack[frame][levelFrame]);
+        }
+    }
+
+    // Render on the input video to make the output video
+    // Define the codec and create VideoWriter object
+    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
+                         Size(vidWidth, vidHeight));
+
+    int k = 0;
+
+    int progress = 0;
+
+    for (int i = startIndex; i < endIndex; i++) {
+        logDebugAndShowUser(env, "Video output", "Processing " + inFile +
+                            " " + to_string(progress * 5) + "%");
+
+        Mat frame, rgbframe, ntscframe, filt_ind, filtered, out_frame;
+        // Capture frame-by-frame
+        video >> frame;
+
+        //imshow("Original", frame);
+
+        // Color conversion GBR 2 NTSC
+        cvtColor(frame, rgbframe, COLOR_BGR2RGB);
+        rgbframe = im2double(rgbframe);
+        ntscframe = rgb2ntsc(rgbframe);
+
+        //imshow("Converted", ntscframe);
+
+        filt_ind = filteredStack[k][0];
+        //imshow("Filtered stack", filt_ind);
+
+        Size img_size(vidWidth, vidHeight);//the dst image size,e.g.100x100
+        resize(filt_ind, filtered, img_size, 0, 0, INTER_CUBIC);//resize image
+
+        filtered = filtered + ntscframe;
+        //imshow("Filtered", filtered);
+
+        frame = ntsc2rgb(filtered);
+        //imshow("Frame", frame);
+
+#pragma omp parallel for
+        for (int x = 0; x < frame.rows; x++) {
+            for (int y = 0; y < frame.cols; y++) {
+                Vec3d this_pixel = frame.at<Vec3d>(x, y);
+                for (int z = 0; z < 3; z++) {
+                    if (this_pixel[z] > 1) {
+                        this_pixel[z] = 1;
+                    }
+
+                    if (this_pixel[z] < 0) {
+                        this_pixel[z] = 0;
+                    }
+                }
+
+                frame.at<Vec3d>(x, y) = this_pixel;
+            }
+        }
+
+        rgbframe = im2uint8(frame);
+        //imshow("Rgb frame", rgbframe);
+
+        cvtColor(rgbframe, out_frame, COLOR_RGB2BGR);
+        //imshow("Out frame", out_frame);
+
+        // Write the frame into the file 'outcpp.avi'
+        videoOut.write(out_frame);
+
+        progress = 20 * (i + 1) / endIndex;
+
+        updateProgress(env, 70 + progress);
+
+        k++;
+    }
+
+    etime = omp_get_wtime();
+
+    // When everything done, release the video capture and write object
+    video.release();
+    videoOut.release();
+
+    updateProgress(env, 100);
+    logDebugAndShowUser(env, "Video output", "Finished processing");
 
     return 0;
 }

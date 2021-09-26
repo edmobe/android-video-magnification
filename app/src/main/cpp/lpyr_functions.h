@@ -1,7 +1,6 @@
-#pragma once
-
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <jni.h>
 
 using namespace std;
 using namespace cv;
@@ -14,4 +13,5 @@ vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex
 
 Mat reconLpyr(vector<Mat> lpyr);
 
-vector<vector<Mat>> ideal_bandpassing_lpyr(vector<vector<Mat>>& input, int dim, double wl, double wh, double samplingRate);
+vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& input,
+                                           int dim, double wl, double wh, double samplingRate);
