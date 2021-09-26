@@ -59,9 +59,9 @@ public class VideoEditor extends AppCompatActivity {
             int selectedMagnificationOption = radioGroupExtract.getCheckedRadioButtonId();
 
             if (selectedAlgorithmOption == -1) {
-                ((App) getApplication()).displayShortToast("Please select an algorithm.");
+                App.displayShortToast("Please select an algorithm.");
             } else if (selectedMagnificationOption == -1) {
-                ((App) getApplication()).displayShortToast("Please select what you want to extract.");
+                App.displayShortToast("Please select what you want to extract.");
             } else if (selectedAlgorithmOption == findViewById(R.id.radio_gaussian_ideal).getId() ||
                     selectedAlgorithmOption == findViewById(R.id.radio_laplacian_ideal).getId() ||
                     selectedAlgorithmOption == findViewById(R.id.radio_laplacian_butterworth).getId() ||
@@ -76,22 +76,21 @@ public class VideoEditor extends AppCompatActivity {
                         intent.getIntExtra(getString(R.string.roi_x), 1));
                 videoEditorParametersActivity.putExtra(getString(R.string.roi_y),
                         intent.getIntExtra(getString(R.string.roi_y), 1));
+
                 if (selectedMagnificationOption ==
-                        findViewById(R.id.radio_respiratory_rate).getId()) {
+                        findViewById(R.id.radio_respiratory_rate).getId() ||
+                    selectedMagnificationOption ==
+                            findViewById(R.id.radio_heart_rate).getId()) {
                     videoEditorParametersActivity.putExtra(
-                            getString(R.string.extract), getString(R.string.respiratory_rate));
-                } else if (selectedMagnificationOption ==
-                        findViewById(R.id.radio_heart_rate).getId()) {
-                    videoEditorParametersActivity.putExtra(
-                            getString(R.string.extract), getString(R.string.heart_rate));
+                            getString(R.string.extract), selectedMagnificationOption);
                 } else {
-                    ((App) getApplication()).displayShortToast(
+                    App.displayShortToast(
                             "Please select what you want to extract.");
                     return;
                 }
                 startActivity(videoEditorParametersActivity);
             } else {
-                ((App) getApplication()).displayShortToast("Unknown error!");
+                App.displayShortToast("Unknown error!");
             }
         });
     }

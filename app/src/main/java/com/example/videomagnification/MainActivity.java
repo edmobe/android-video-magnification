@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.databinding.ActivityMainBinding;
-
-import org.apache.commons.io.FilenameUtils;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
@@ -39,10 +38,15 @@ public class MainActivity extends AppCompatActivity {
     private float chromAtt;
     private float r1;
     private float r2;
-    private String extract;
+    private int extractRadioButtonId;
     private int algorithmRadioButtonId;
     private int roiX;
     private int roiY;
+
+    private int gaussianId;
+    private int laplacianIdealId;
+    private int laplacianButterId;
+    private int laplacianIirId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +69,15 @@ public class MainActivity extends AppCompatActivity {
         chromAtt = intent.getFloatExtra(getString(R.string.chrom_attenuation), 0.1f);
         r1 = intent.getFloatExtra(getString(R.string.r1), 0.1f);
         r2 = intent.getFloatExtra(getString(R.string.r2), 0.1f);
-        extract = intent.getStringExtra(getString(R.string.extract));
+        extractRadioButtonId = intent.getIntExtra(getString(R.string.extract), -1);
         algorithmRadioButtonId = intent.getIntExtra(
                 getString(R.string.select_an_algorithm), -1);
+
+        gaussianId = R.id.radio_gaussian_ideal;
+        laplacianIdealId = R.id.radio_laplacian_ideal;
+        laplacianButterId = R.id.radio_laplacian_butterworth;
+        laplacianIirId = R.id.radio_laplacian_iir;
+
 //        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
 //        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
 
@@ -87,10 +97,36 @@ public class MainActivity extends AppCompatActivity {
                         // TODO: Error handling
                         ((App) getApplication()).logDebug("Observable", integer.toString());
                         if (integer == 1) {
-                            int state = amplifySpatialLpyrTemporalIdeal(videoPath,
-                                    FilenameUtils.getPath(videoPath),
-                                    alpha, lambdaC, fl, fh, sampling, chromAtt);
-                            App.displayShortToast(String.valueOf(state));
+                            int state = -1;
+
+                            if (algorithmRadioButtonId == gaussianId) {
+                                // Gaussian Ideal
+                                App.displayShortToast("Gaussian ideal");
+                            } else if (algorithmRadioButtonId == laplacianIdealId) {
+                                // Laplacian Ideal
+                                // ============= FOR TESTING =================
+                                App.displayShortToast("Laplacian ideal");
+//                                videoPath =
+//                                        "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
+//                                state = amplifySpatialLpyrTemporalIdeal(videoPath,
+//                                        FilenameUtils.getPath(videoPath),
+//                                        100, 10, 100, 120, 600,
+//                                        0);
+                                // ============= FOR RELEASE =================
+//                            state = amplifySpatialLpyrTemporalIdeal(videoPath,
+//                                    FilenameUtils.getPath(videoPath),
+//                                    alpha, lambdaC, fl, fh, sampling, chromAtt);
+                                // ===========================================
+                            } else if (algorithmRadioButtonId == laplacianButterId) {
+                                // Butter
+                                App.displayShortToast("Butter");
+                            } else if (algorithmRadioButtonId == laplacianIirId) {
+                                // IIR
+                                App.displayShortToast("IIR");
+                            } else {
+                                App.displayShortToast("Unknown algorithm");
+                            }
+                            //App.displayShortToast(String.valueOf(state));
                         }
                     }
 
@@ -120,7 +156,11 @@ public class MainActivity extends AppCompatActivity {
 
     public static void updateProgress(int progress) {
         boolean handler = new Handler(Looper.getMainLooper()).post(() -> {
-            MainActivity.progress.setProgress(progress);
+            if (progress >= 100) {
+                MainActivity.progress.setVisibility(View.INVISIBLE);
+            } else {
+                MainActivity.progress.setProgress(progress);
+            }
         });
     }
 

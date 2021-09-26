@@ -15,7 +15,7 @@ public class VideoEditorParameters extends AppCompatActivity {
 
     private Intent intent;
     private String videoPath;
-    private String extract;
+    private int extract;
     private int roiX;
     private int roiY;
 
@@ -54,7 +54,7 @@ public class VideoEditorParameters extends AppCompatActivity {
     private void getIntentDetails() {
         intent = getIntent(); // gets the previously created intent
         videoPath = intent.getStringExtra(getString(R.string.video_file_path));
-        extract = intent.getStringExtra(getString(R.string.extract));
+        extract = intent.getIntExtra(getString(R.string.extract), 0);
         roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
         roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
     }
@@ -227,8 +227,7 @@ public class VideoEditorParameters extends AppCompatActivity {
             floatSeeks[i].setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    floatTextViews[textViewIndex].setText(
-                            Float.valueOf(progress / FLOAT_DIVIDER).toString());
+                    floatTextViews[textViewIndex].setText(String.valueOf(progress / FLOAT_DIVIDER));
                 }
 
                 @Override
@@ -248,9 +247,9 @@ public class VideoEditorParameters extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress >= seekFh.getProgress()) {
                     seekFh.setProgress(progress + 1);
-                    textFh.setText(Float.valueOf(getFh()).toString());
+                    textFh.setText(String.valueOf(getFh()));
                 }
-                textFl.setText(Float.valueOf(progress / FLOAT_DIVIDER).toString());
+                textFl.setText(String.valueOf(progress / FLOAT_DIVIDER));
             }
 
             @Override
@@ -269,9 +268,9 @@ public class VideoEditorParameters extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress <= seekFl.getProgress()) {
                     seekFl.setProgress(progress - 1);
-                    textFl.setText(Float.valueOf(getFl()).toString());
+                    textFl.setText(String.valueOf(getFl()));
                 }
-                textFh.setText(Float.valueOf(progress / FLOAT_DIVIDER).toString());
+                textFh.setText(String.valueOf(progress / FLOAT_DIVIDER));
             }
 
             @Override

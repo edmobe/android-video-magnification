@@ -213,7 +213,8 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
     videoOut.release();
 
     updateProgress(env, 100);
-    logDebugAndShowUser(env, "Video output", "Finished processing");
+    logDebugAndShowUser(env, "Video output", "Finished processing in " +
+                        to_string(etime - itime) + " seconds");
 
     return 0;
 }
@@ -243,8 +244,9 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
 * License : Please refer to the LICENCE file (MIT license)
 * Original date : June 2012
 */
-int amplify_spatial_lpyr_temporal_iir(string inFile, string outDir, double alpha,
-                                      double lambda_c, double r1, double r2, double chromAttenuation) {
+int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir, double alpha,
+                                      double lambda_c, double r1, double r2,
+                                      double chromAttenuation) {
 
     double itime, etime;
 
