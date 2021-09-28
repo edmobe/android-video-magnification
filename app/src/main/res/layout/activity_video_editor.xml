@@ -37,12 +37,6 @@
             android:layout_height="wrap_content"
             android:text="@string/laplacian_butterworth" />
 
-        <RadioButton
-            android:id="@+id/radio_laplacian_iir"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/laplacian_iir" />
-
     </RadioGroup>
 
     <TextView

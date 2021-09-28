@@ -64,8 +64,8 @@ public class VideoEditor extends AppCompatActivity {
                 App.displayShortToast("Please select what you want to extract.");
             } else if (selectedAlgorithmOption == findViewById(R.id.radio_gaussian_ideal).getId() ||
                     selectedAlgorithmOption == findViewById(R.id.radio_laplacian_ideal).getId() ||
-                    selectedAlgorithmOption == findViewById(R.id.radio_laplacian_butterworth).getId() ||
-                    selectedAlgorithmOption == findViewById(R.id.radio_laplacian_iir).getId()) {
+                    selectedAlgorithmOption == findViewById(R.id.radio_laplacian_butterworth)
+                            .getId()) {
                 Intent videoEditorParametersActivity =
                         new Intent(getApplicationContext(), VideoEditorParameters.class);
                 videoEditorParametersActivity.putExtra(getString(R.string.video_file_path), videoPath);

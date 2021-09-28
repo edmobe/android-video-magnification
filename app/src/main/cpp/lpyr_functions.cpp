@@ -62,23 +62,6 @@ vector<Mat> buildLpyrfromGauss(Mat image, int levels) {
     return laplacianPyramid;
 }
 
-vector<Mat> buildLpyr(Mat image, int levels) {
-    vector<Mat> gaussianPyramid(levels);
-    vector<Mat> expandedPyramid(levels - 1);
-    vector<Mat> laplacianPyramid(levels);
-
-    gaussianPyramid[0] = image.clone();
-
-    for (int l = 0; l < levels - 1; l++) {
-        pyrDown(gaussianPyramid[l], gaussianPyramid[l + 1], Size((gaussianPyramid[l].cols + 1) / 2, (gaussianPyramid[l].rows + 1) / 2), BORDER_REFLECT101);
-        pyrUp(gaussianPyramid[l + 1], expandedPyramid[l], Size(gaussianPyramid[l].cols, gaussianPyramid[l].rows), BORDER_REFLECT101);
-        laplacianPyramid[l] = gaussianPyramid[l] - expandedPyramid[l];
-    }
-    laplacianPyramid[levels - 1] = gaussianPyramid[levels - 1];
-
-    return laplacianPyramid;
-}
-
 vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex, int endIndex) {
     // Read video
     // Create a VideoCapture object and open the input file
@@ -325,26 +308,4 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& inp
     }
 
     return filtered;
-}
-
-Mat pyrVectorToMat(vector<Mat> pyr) {
-    Mat output;
-    for(Mat level : pyr) {
-        Mat tmp = level;
-        tmp = tmp.reshape(0, (int)tmp.total());
-        output.push_back(tmp);
-    }
-    return output;
-}
-
-vector<Mat> pyrMatToVector(Mat mat, vector<Mat> pyrTemplate) {
-    vector<Mat> output = pyrTemplate;
-    int nLevels = pyrTemplate.size();
-    for(int i = 0; i < nLevels; i++) {
-        Rect roi(0, 0, 1, (int) pyrTemplate[i].total());
-        Mat tmp(mat, roi);
-        output[i] = tmp;
-        output[i] = output[i].reshape(0, pyrTemplate[i].rows);
-    }
-    return output;
 }

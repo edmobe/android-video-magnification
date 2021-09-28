@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
     private int gaussianId;
     private int laplacianIdealId;
     private int laplacianButterId;
-    private int laplacianIirId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
         gaussianId = R.id.radio_gaussian_ideal;
         laplacianIdealId = R.id.radio_laplacian_ideal;
         laplacianButterId = R.id.radio_laplacian_butterworth;
-        laplacianIirId = R.id.radio_laplacian_iir;
 
 //        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
 //        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
@@ -122,20 +120,6 @@ public class MainActivity extends AppCompatActivity {
                             } else if (algorithmRadioButtonId == laplacianButterId) {
                                 // Butter
                                 App.displayShortToast("Butter");
-                            } else if (algorithmRadioButtonId == laplacianIirId) {
-                                // IIR
-                                // ============= FOR TESTING =================
-                                App.displayShortToast("IIR");
-                                videoPath =
-                                        "/storage/emulated/0/Pictures/video-magnification/baby.avi";
-                                state = amplifySpatialLpyrTemporalIir(videoPath,
-                                        FilenameUtils.getPath(videoPath),
-                                        10, 16, 0.4, 0.05, 10);
-                                // ============= FOR RELEASE =================
-//                                state = amplifySpatialLpyrTemporalIir(videoPath,
-//                                    FilenameUtils.getPath(videoPath),
-//                                    alpha, lambdaC, r1, r2, chromAtt);
-                                // ===========================================
                             } else {
                                 App.displayShortToast("Unknown algorithm");
                             }
@@ -181,9 +165,5 @@ public class MainActivity extends AppCompatActivity {
                                                       double alpha, double lambda_c,
                                                       double fl, double fh, double samplingRate,
                                                       double chromAttenuation);
-
-    public native int amplifySpatialLpyrTemporalIir(String videoIn, String outDir,
-                                                    double alpha, double lambda_c,
-                                                    double r1, double r2, double chromAttenuation);
 
 }

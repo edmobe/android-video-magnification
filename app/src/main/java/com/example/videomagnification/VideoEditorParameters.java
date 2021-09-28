@@ -141,30 +141,6 @@ public class VideoEditorParameters extends AppCompatActivity {
         findViewById(R.id.seek_r2).setVisibility(View.GONE);
     }
 
-
-    private void hideLaplacianIirElements() {
-        // Level
-        findViewById(R.id.text_level).setVisibility(View.GONE);
-        findViewById(R.id.textViewLevel).setVisibility(View.GONE);
-        findViewById(R.id.seek_level).setVisibility(View.GONE);
-
-        // Fl
-        findViewById(R.id.text_fl).setVisibility(View.GONE);
-        findViewById(R.id.textViewFl).setVisibility(View.GONE);
-        findViewById(R.id.seek_fl).setVisibility(View.GONE);
-
-        // Fh
-        findViewById(R.id.text_fh).setVisibility(View.GONE);
-        findViewById(R.id.textViewFh).setVisibility(View.GONE);
-        findViewById(R.id.seek_fh).setVisibility(View.GONE);
-
-        // Sampling
-        findViewById(R.id.text_sampling).setVisibility(View.GONE);
-        findViewById(R.id.textViewSampling).setVisibility(View.GONE);
-        findViewById(R.id.seek_sampling).setVisibility(View.GONE);
-
-    }
-
     private void setParametersBasedOnAlgorithm() {
         algorithmRadioButtonId = intent.getIntExtra(
                 getString(R.string.select_an_algorithm), -1);
@@ -183,10 +159,6 @@ public class VideoEditorParameters extends AppCompatActivity {
             spatialFiltering = "Laplacian pyramid";
             temporalFiltering = "Subtraction of two butterworth low-pass filters";
             hideLaplacianIdealButterElements();
-        } else if (algorithmRadioButtonId == R.id.radio_laplacian_iir) {
-            spatialFiltering = "Laplacian pyramid";
-            temporalFiltering = "Subtraction of two IIR low-pass filters";
-            hideLaplacianIirElements();
         } else {
             Intent videoEditorActivity =
                     new Intent(getApplicationContext(), VideoEditorParameters.class);
