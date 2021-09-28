@@ -47,17 +47,34 @@ vector<Mat> buildLpyrfromGauss(Mat image, int levels) {
     vector<Mat> gaussianPyramid;
     vector<Mat> laplacianPyramid(levels);
 
-    buildPyramid(image, gaussianPyramid, levels, BORDER_REFLECT101);
+    buildPyramid(image, gaussianPyramid, levels, BORDER_REFLECT);
 
-#pragma omp parallel for shared(gaussianPyramid, laplacianPyramid)
+//#pragma omp parallel for shared(gaussianPyramid, laplacianPyramid)
     for (int l = 0; l < levels - 1; l++) {
         Mat expandedPyramid;
         //pyrDown(gaussianPyramid[l], gaussianPyramid[l + 1], Size((gaussianPyramid[l].cols + 1) / 2, (gaussianPyramid[l].rows + 1) / 2), BORDER_REFLECT101);
         pyrUp(gaussianPyramid[l+1], expandedPyramid, Size(gaussianPyramid[l].cols, gaussianPyramid[l].rows), BORDER_REFLECT101);
-        laplacianPyramid[l] = gaussianPyramid[l] - expandedPyramid;
+        subtract(gaussianPyramid[l], expandedPyramid, laplacianPyramid[l]);
     }
 
-    laplacianPyramid[levels-1] = gaussianPyramid[levels-1];
+    laplacianPyramid[levels-1] = gaussianPyramid[levels-1].clone();
+
+    return laplacianPyramid;
+}
+
+vector<Mat> buildLpyr(Mat image, int levels) {
+    vector<Mat> gaussianPyramid(levels);
+    vector<Mat> expandedPyramid(levels - 1);
+    vector<Mat> laplacianPyramid(levels);
+
+    gaussianPyramid[0] = image.clone();
+
+    for (int l = 0; l < levels - 1; l++) {
+        pyrDown(gaussianPyramid[l], gaussianPyramid[l + 1], Size((gaussianPyramid[l].cols + 1) / 2, (gaussianPyramid[l].rows + 1) / 2), BORDER_REFLECT101);
+        pyrUp(gaussianPyramid[l + 1], expandedPyramid[l], Size(gaussianPyramid[l].cols, gaussianPyramid[l].rows), BORDER_REFLECT101);
+        laplacianPyramid[l] = gaussianPyramid[l] - expandedPyramid[l];
+    }
+    laplacianPyramid[levels - 1] = gaussianPyramid[levels - 1];
 
     return laplacianPyramid;
 }
@@ -127,11 +144,10 @@ Mat reconLpyr(vector<Mat> lpyr) {
     for (int l = levels - 2; l >= 0; l--) {
         Size res_sz = Size(lpyr[l].cols, lpyr[l].rows);
         pyrUp(res, res, res_sz, BORDER_REFLECT101);
-
-        res += lpyr[l].clone();
+        add(res, lpyr[l], res);
     }
 
-    return res;
+    return res.clone();
 }
 
 vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& input,
@@ -147,7 +163,8 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& inp
     Here (C++) it is not applied any shifting, yet.
     */
     if (dim > 1 + input[0][0].channels()) {
-        std::cout << "Exceed maximun dimension" << endl;
+        logDebugAndShowUser(env, "Temporal processing",
+                            "Error: exceeded maximum dimension");
         exit(1);
     }
 
@@ -308,4 +325,26 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& inp
     }
 
     return filtered;
+}
+
+Mat pyrVectorToMat(vector<Mat> pyr) {
+    Mat output;
+    for(Mat level : pyr) {
+        Mat tmp = level;
+        tmp = tmp.reshape(0, (int)tmp.total());
+        output.push_back(tmp);
+    }
+    return output;
+}
+
+vector<Mat> pyrMatToVector(Mat mat, vector<Mat> pyrTemplate) {
+    vector<Mat> output = pyrTemplate;
+    int nLevels = pyrTemplate.size();
+    for(int i = 0; i < nLevels; i++) {
+        Rect roi(0, 0, 1, (int) pyrTemplate[i].total());
+        Mat tmp(mat, roi);
+        output[i] = tmp;
+        output[i] = output[i].reshape(0, pyrTemplate[i].rows);
+    }
+    return output;
 }

@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.databinding.ActivityMainBinding;
 
+import org.apache.commons.io.FilenameUtils;
+
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Observer;
@@ -106,12 +108,12 @@ public class MainActivity extends AppCompatActivity {
                                 // Laplacian Ideal
                                 // ============= FOR TESTING =================
                                 App.displayShortToast("Laplacian ideal");
-//                                videoPath =
-//                                        "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
-//                                state = amplifySpatialLpyrTemporalIdeal(videoPath,
-//                                        FilenameUtils.getPath(videoPath),
-//                                        100, 10, 100, 120, 600,
-//                                        0);
+                                videoPath =
+                                        "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
+                                state = amplifySpatialLpyrTemporalIdeal(videoPath,
+                                        FilenameUtils.getPath(videoPath),
+                                        100, 10, 100, 120, 600,
+                                        0);
                                 // ============= FOR RELEASE =================
 //                            state = amplifySpatialLpyrTemporalIdeal(videoPath,
 //                                    FilenameUtils.getPath(videoPath),
@@ -122,7 +124,18 @@ public class MainActivity extends AppCompatActivity {
                                 App.displayShortToast("Butter");
                             } else if (algorithmRadioButtonId == laplacianIirId) {
                                 // IIR
+                                // ============= FOR TESTING =================
                                 App.displayShortToast("IIR");
+                                videoPath =
+                                        "/storage/emulated/0/Pictures/video-magnification/baby.avi";
+                                state = amplifySpatialLpyrTemporalIir(videoPath,
+                                        FilenameUtils.getPath(videoPath),
+                                        10, 16, 0.4, 0.05, 10);
+                                // ============= FOR RELEASE =================
+//                                state = amplifySpatialLpyrTemporalIir(videoPath,
+//                                    FilenameUtils.getPath(videoPath),
+//                                    alpha, lambdaC, r1, r2, chromAtt);
+                                // ===========================================
                             } else {
                                 App.displayShortToast("Unknown algorithm");
                             }
@@ -168,5 +181,9 @@ public class MainActivity extends AppCompatActivity {
                                                       double alpha, double lambda_c,
                                                       double fl, double fh, double samplingRate,
                                                       double chromAttenuation);
+
+    public native int amplifySpatialLpyrTemporalIir(String videoIn, String outDir,
+                                                    double alpha, double lambda_c,
+                                                    double r1, double r2, double chromAttenuation);
 
 }

@@ -27,16 +27,16 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
                                       double lambda_c, double r1, double r2,
                                       double chromAttenuation);
 
-/*
-Spatial filter functions
-*/
-
-vector<Mat> build_GDown_stack(string vidFile, int startIndex, int endIndex, int level);
-
-
-/*
-Temporal filter functions
-*/
-
-vector<Mat> ideal_bandpassing(vector<Mat> input, int dim, double wl, double wh, int samplingRate);
+///*
+//Spatial filter functions
+//*/
+//
+//vector<Mat> build_GDown_stack(string vidFile, int startIndex, int endIndex, int level);
+//
+//
+///*
+//Temporal filter functions
+//*/
+//
+//vector<Mat> ideal_bandpassing(vector<Mat> input, int dim, double wl, double wh, int samplingRate);
 

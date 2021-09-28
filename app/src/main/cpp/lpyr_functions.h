@@ -7,7 +7,13 @@ using namespace cv;
 
 int maxPyrHt(int frameWidth, int frameHeight, int filterSizeX, int filterSizeY);
 
+Mat pyrVectorToMat(vector<Mat> pyr);
+
+vector<Mat> pyrMatToVector(Mat mat, vector<Mat> pyrTemplate);
+
 vector<Mat> buildLpyrfromGauss(Mat image, int levels);
+
+vector<Mat> buildLpyr(Mat image, int levels);
 
 vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex, int endIndex);
 

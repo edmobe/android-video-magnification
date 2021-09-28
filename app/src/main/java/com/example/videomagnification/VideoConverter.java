@@ -82,7 +82,7 @@ public class VideoConverter extends AppCompatActivity {
 
             @Override
             public void onError(@NonNull Throwable e) {
-                ((App) getApplication()).displayShortToast(
+                App.displayShortToast(
                         "Error while converting the video!"
                 );
                 ((App) getApplication()).logError("Converting video",
@@ -114,7 +114,7 @@ public class VideoConverter extends AppCompatActivity {
                         "Created directory for the first time: " + fileDir);
                 return true;
             } catch (Exception e) {
-                ((App)getApplication()).displayShortToast(
+                App.displayShortToast(
                         "Error creating the output video directory!");
                 ((App)getApplication()).logError(
                         "Native lib", "Error creating the folder: " +

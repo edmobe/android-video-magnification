@@ -33,14 +33,10 @@
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIdeal(
-        JNIEnv *env, jobject,
+        JNIEnv *env, jobject thiz,
         jstring video_in, jstring out_dir, jdouble alpha,
         jdouble lambda_c, jdouble fl, jdouble fh, jdouble sampling_rate,
         jdouble chrom_attenuation) {
-
-    //getting set text method
-    jclass clazz = env->FindClass("android/widget/TextView");
-    jmethodID setText = env->GetMethodID(clazz, "setText", "(Ljava/lang/CharSequence;)V");
 
     const char *videoInCharArr = env->GetStringUTFChars(video_in, 0);
     std::string inFile = std::string(videoInCharArr);
@@ -53,4 +49,25 @@ Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIdeal
                                                      sampling_rate, chrom_attenuation);
 
     return status;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIir(
+        JNIEnv *env, jobject thiz,
+        jstring video_in, jstring out_dir, jdouble alpha,
+        jdouble lambda_c, jdouble r1, jdouble r2, jdouble chrom_attenuation) {
+
+    const char *videoInCharArr = env->GetStringUTFChars(video_in, nullptr);
+    std::string inFile = std::string(videoInCharArr);
+    const char *outputDirCharArr = env->GetStringUTFChars(out_dir, nullptr);
+    std::string outDir = std::string(outputDirCharArr);
+
+    logDebug("Video reception - Input file", inFile);
+
+    int status = amplify_spatial_lpyr_temporal_iir(env, inFile, outDir, alpha, lambda_c, r1, r2,
+                                                   chrom_attenuation);
+
+    return status;
+
 }

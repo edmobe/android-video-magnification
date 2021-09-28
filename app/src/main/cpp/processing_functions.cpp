@@ -75,8 +75,10 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
     VideoCapture video(inFile);
 
     // Check if video opened successfully
+
     if (!video.isOpened()) {
-        std::cout << "Error opening video stream or file" << endl;
+        logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
+        updateProgress(env, 100);
         return -1;
     }
 
@@ -196,7 +198,7 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
         cvtColor(rgbframe, out_frame, COLOR_RGB2BGR);
         //imshow("Out frame", out_frame);
 
-        // Write the frame into the file 'outcpp.avi'
+        // Write the frame into the output file
         videoOut.write(out_frame);
 
         progress = 20 * (i + 1) / endIndex;
@@ -249,8 +251,14 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
                                       double chromAttenuation) {
 
     double itime, etime;
-
     itime = omp_get_wtime();
+
+    /*
+     * ================= VIDEO RECEPTION =================
+     * */
+
+    logDebugAndShowUser(env, "Video reception",
+                        "Extracting video information");
 
     string name;
     string delimiter = "/";
@@ -267,8 +275,7 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
     string outName = outDir + name + "-iir-r1-" + to_string(r1) + "-r2-" +
                      to_string(r2) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
                      "-chromAtn-" + to_string(chromAttenuation) + ".avi";
-
-    setBreakOnError(true);
+    logDebug("Video reception - Output file", outName);
 
     // Create a VideoCapture object and open the input file
     // If the input is the web camera, pass 0 instead of the video file name
@@ -277,7 +284,8 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
 
     // Check if video opened successfully
     if (!video.isOpened()) {
-        std::cout << "Error opening video stream or file" << endl;
+        logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
+        updateProgress(env, 100);
         return -1;
     }
 
@@ -296,19 +304,25 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
     // Compute maximum pyramid height for every frame
     int max_ht = 1 + maxPyrHt(vidWidth, vidHeight, MAX_FILTER_SIZE, MAX_FILTER_SIZE);
 
+    logDebug("Video reception - Video info (len)", to_string(len));
+    logDebug("Video reception - Video info (Start index)", to_string(startIndex));
+    logDebug("Video reception - Video info (End index)", to_string(endIndex));
+    logDebug("Video reception - Video info (Height)", to_string(vidHeight));
+    logDebug("Video reception - Video info (Width)", to_string(vidWidth));
+    logDebug("Video reception - Video info (FPS)", to_string(fr));
+    logDebug("Video reception - Maximum pyramid height", to_string(max_ht));
+
+    updateProgress(env, 5);
+
+    /*
+     * ================= FIRST FRAME PROCESSING =================
+     * */
+
     // Variables to be used
-    Mat frame, rgbframe, ntscframe, output;
-    vector<Mat> lowpass1, lowpass2, pyr_prev;
-    vector<Mat> pyr(max_ht), filtered(max_ht);
+    Mat frame, rgbframe, rgbframebackup, ntscframe, output,
+        lowpass1, lowpass2, pyr, filtered, tmp1_1, tmp1_2, tmp2_1, tmp2_2;
+    vector<Mat> pyrVector, filteredVector;
 
-    float progress = 0;
-    for (int i = 0; i < BAR_WIDTH; ++i) {
-        std::cout << "=";
-    }
-    std::cout << std::endl;
-    std::cout << "Processing " << inFile << "." << endl;
-
-    // First frame
     video >> frame;
 
     // If the frame is empty, throw an error
@@ -320,32 +334,37 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
     rgbframe = im2double(rgbframe);
     ntscframe = rgb2ntsc(rgbframe);
 
-    pyr = buildLpyrfromGauss(ntscframe, max_ht);
+    pyrVector = buildLpyrfromGauss(ntscframe, max_ht);
+    pyr = pyrVectorToMat(pyrVector);
     lowpass1 = pyr;
     lowpass2 = pyr;
 
-    int nLevels = (int)pyr.size();
+    output = im2uint8(rgbframe);
+    cvtColor(output, output, COLOR_RGB2BGR);
+    videoOut.write(output);
 
-    // Scalar vector for color attenuation in YIQ (NTSC) color space
-    Scalar color_amp(1.0f, chromAttenuation, chromAttenuation);
+    /*
+     * ================= REST OF THE FRAMES PROCESSING =================
+     * */
 
     // Temporal filtering variables
-    double delta = (double)(lambda_c / 8) / (1 + alpha);
-    int exaggeration_factor = 2;
-    double lambda = (double)sqrt(vidHeight * vidHeight + vidWidth * vidWidth) / 3;
+    static double delta = (double)(lambda_c / 8) / (double) (1 + alpha);
+    static double exaggeration_factor = 2;
+    static double lambda = (double) sqrt(vidHeight * vidHeight + vidWidth * vidWidth) / (double) 3;
+    static double coefficient1 = (1 - r1);
+    static double coefficient2 = (1 - r2);
+
+    int progress;
+    int nLevels = (int)pyrVector.size();
 
     for (int i = startIndex; i < endIndex; i++) {
-        progress = (float)i / endIndex;
 
-        std::cout << "[";
-        int pos = (int)(BAR_WIDTH * progress);
-        for (int j = 0; j < BAR_WIDTH; ++j) {
-            if (j < pos) std::cout << "=";
-            else if (j == pos) std::cout << ">";
-            else std::cout << " ";
-        }
-        std::cout << "] " << int(progress * 100.0) << " %\r";
-        std::cout.flush();
+        progress = 95 * (i + 1) / endIndex;
+        updateProgress(env, 5 + progress);
+
+        logDebugAndShowUser(env, "Processing video", "Frame " +
+                                                     to_string(i + 1) + " of " +
+                                                     to_string(endIndex));
 
         // Capture frame-by-frame
         video >> frame;
@@ -360,62 +379,116 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
         ntscframe = rgb2ntsc(rgbframe);
 
         // Compute the laplacian pyramid
-        pyr = buildLpyrfromGauss(ntscframe, max_ht);
+        pyrVector = buildLpyrfromGauss(ntscframe, max_ht);
+        pyr = pyrVectorToMat(pyrVector);
 
-        double coefficient1 = (1 - r1);
-        double coefficient2 = (1 - r2);
-        int pixelIterator = 0;
+        multiply(Scalar(coefficient1), lowpass1, tmp1_1);
+        multiply(Scalar(r1), pyr, tmp1_2);
+        add(tmp1_1, tmp1_2, lowpass1);
 
-#pragma omp parallel for shared(lowpass1, lowpass2, pyr, filtered)
-        for (int level = 0; level < nLevels; level++) {
-            lowpass1[level] = coefficient1 * lowpass1[level].clone() + r1 * pyr[level].clone();
-            lowpass2[level] = coefficient2 * lowpass2[level].clone() + r2 * pyr[level].clone();
-            filtered[level] = lowpass1[level] - lowpass2[level];
-        }
+        multiply(Scalar(coefficient2), lowpass2, tmp2_1);
+        multiply(Scalar(r2), pyr, tmp2_2);
+        add(tmp2_1, tmp2_2, lowpass2);
+
+        subtract(lowpass1, lowpass2, filtered, noArray(), CV_64FC3);
+
+        vector<Vec3d> ntscframe_vector;
+        ntscframe.reshape(0, (int)ntscframe.total()).copyTo(ntscframe_vector);
+
+        vector<Vec3d> tmp1_1_vector;
+        tmp1_1.copyTo(tmp1_1_vector);
+
+        vector<Vec3d> tmp1_2_vector;
+        tmp1_2.copyTo(tmp1_2_vector);
+
+        vector<Vec3d> tmp2_1_vector;
+        tmp2_1.copyTo(tmp2_1_vector);
+
+        vector<Vec3d> tmp2_2_vector;
+        tmp2_2.copyTo(tmp2_2_vector);
+
+        vector<Vec3d> lowpass1_vector;
+        lowpass1.copyTo(lowpass1_vector);
+
+        vector<Vec3d> lowpass2_vector;
+        lowpass2.copyTo(lowpass2_vector);
+
+        vector<Vec3d> pyr_vector;
+        pyr.copyTo(pyr_vector);
+
+        vector<Vec3d> filtered_vector;
+        filtered.copyTo(filtered_vector);
+
+        filteredVector = pyrMatToVector(filtered, pyrVector);
 
         // Go one level down on pyramid each stage
-#pragma omp parallel for shared(filtered, lambda)
-        for (int l = nLevels - 1; l >= 0; l--) {
+//#pragma omp parallel for shared(lowpass1, lowpass2, pyr, filtered)
+        for (int level = nLevels - 1; level >= 0; level--) {
             // Compute modified alpha for this level
             double currAlpha = lambda / delta / 8.0 - 1.0;
             currAlpha = currAlpha * exaggeration_factor;
-
-            //cout << currAlpha << endl;
-            Mat mat_result;
-
-            if (l == max_ht - 1 || l == 0) { // ignore the highest and lowest frecuency band
-                Size mat_sz(filtered[l].cols, filtered[l].rows);
-                mat_result = Mat::zeros(mat_sz, CV_64FC3);
+            if (level == max_ht - 1 || level == 0) { // ignore the highest and lowest frecuency band
+                Size mat_sz(filteredVector[level].cols, filteredVector[level].rows);
+                filteredVector[level] = Mat::zeros(mat_sz, CV_64FC3);
+            } else if (currAlpha > alpha) { // representative lambda exceeds lambda_c
+                filteredVector[level] = alpha * filteredVector[level];
+            } else {
+                filteredVector[level] = currAlpha * filteredVector[level];
             }
-            else if (currAlpha > alpha) { // representative lambda exceeds lambda_c
-                mat_result = alpha * filtered[l].clone();
-            }
-            else {
-                mat_result = currAlpha * filtered[l].clone();
-            }
-            filtered[l] = mat_result.clone();
 
-            lambda = lambda / 2.0f;
+            lambda = lambda / (double) 2;
         }
 
 
         // Render on the input video
-        output = reconLpyr(filtered);
+        output = reconLpyr(filteredVector);
+//        std::vector<Vec3d> output_vector;
+//        Mat output_reshaped;
+//        output_reshaped = output.reshape(0, 1);
+//        output_reshaped.copyTo(output_vector);
+//        Vec3d at_696285 = output_vector[696285];
 
+//        vector<Mat> channels(3);
+//        split(output, channels);
+//        multiply(channels[1], chromAttenuation, channels[1]);
+//        multiply(channels[2], chromAttenuation, channels[2]);
+//        merge(channels, output);
+
+        // Scalar vector for color attenuation in YIQ (NTSC) color space
+        Scalar color_amp(0, chromAttenuation, chromAttenuation);
         multiply(output, color_amp, output);
-        add(ntscframe, output, output, noArray(), DataType<double>::type);
+
+        output = ntscframe + output;
+        //add(ntscframe, output, output, noArray(), DataType<double>::type);
 
         rgbframe = ntsc2rgb(output);
 
         threshold(rgbframe, rgbframe, 0.0f, 0.0f, THRESH_TOZERO);
         threshold(rgbframe, rgbframe, 1.0f, 1.0f, THRESH_TRUNC);
 
-        frame = im2uint8(rgbframe);
+//        logDebug("Validating matrix changes - (0 0)",
+//                 to_string(rgbframebackup.at<double>(0, 0)));
+//        logDebug("Validating matrix changes - (0 1)",
+//                 to_string(rgbframebackup.at<double>(0, 1)));
+//        logDebug("Validating matrix changes - (0 2)",
+//                 to_string(rgbframebackup.at<double>(0, 2)));
+//        logDebug("Validating matrix changes - (0 3)",
+//                 to_string(rgbframebackup.at<double>(0, 3)));
+//        logDebug("Validating matrix changes - (0 4)",
+//                 to_string(rgbframebackup.at<double>(0, 4)));
+//        logDebug("Validating matrix changes - (0 5)",
+//                 to_string(rgbframebackup.at<double>(0, 5)));
+//        logDebug("Validating matrix changes - (0 6)",
+//                 to_string(rgbframebackup.at<double>(0, 6)));
+//        logDebug("Validating matrix changes - (0 7)",
+//                 to_string(rgbframebackup.at<double>(0, 7)));
 
-        cvtColor(frame, frame, COLOR_RGB2BGR);
 
-        //frame_stack[i] = frame.clone();
-        videoOut.write(frame);
+        output = im2uint8(rgbframe);
+
+        cvtColor(output, output, COLOR_RGB2BGR);
+
+        videoOut.write(output);
 
     }
 
@@ -425,15 +498,9 @@ int amplify_spatial_lpyr_temporal_iir(JNIEnv *env, string inFile, string outDir,
     video.release();
     videoOut.release();
 
-    std::cout << std::endl;
-    std::cout << "Finished. Elapsed time: " << etime - itime << " secs." << std::endl;
-    for (int i = 0; i < BAR_WIDTH; ++i) {
-        std::cout << "=";
-    }
-    std::cout << std::endl;
-
-    // Closes all the frames
-    cv::destroyAllWindows();
+    updateProgress(env, 100);
+    logDebugAndShowUser(env, "Video output", "Finished processing in " +
+                                             to_string(etime - itime) + " seconds");
 
     return 0;
 }
