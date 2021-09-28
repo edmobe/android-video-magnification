@@ -11,8 +11,8 @@ using namespace cv;
 Video processing functions
 */
 
-int amplify_spatial_Gdown_temporal_ideal(string inFile, string outDir, double alpha, int level,
-                                         double f1, double fh, int samplingRate,
+int amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
+                                         int level, double f1, double fh, int samplingRate,
                                          double chromAttenuation);
 
 int amplify_spatial_lpyr_temporal_butter(string inFile, string outDir, double alpha,

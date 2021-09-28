@@ -101,7 +101,18 @@ public class MainActivity extends AppCompatActivity {
 
                             if (algorithmRadioButtonId == gaussianId) {
                                 // Gaussian Ideal
+                                // ============= FOR TESTING =================
                                 App.displayShortToast("Gaussian ideal");
+                                videoPath =
+                                        "/storage/emulated/0/Pictures/video-magnification/face.avi";
+                                state = amplifySpatialGdownTemporalIdeal(videoPath,
+                                        FilenameUtils.getPath(videoPath),
+                                        50,4,  (double)5 / (double)6, 1,
+                                        30, 1);
+                                // ============= FOR RELEASE =================
+//                            state = amplifySpatialLpyrTemporalIdeal(videoPath,
+//                                    FilenameUtils.getPath(videoPath),
+//                                    alpha, lambdaC, fl, fh, sampling, chromAtt);
                             } else if (algorithmRadioButtonId == laplacianIdealId) {
                                 // Laplacian Ideal
                                 // ============= FOR TESTING =================
@@ -163,6 +174,11 @@ public class MainActivity extends AppCompatActivity {
 
     public native int amplifySpatialLpyrTemporalIdeal(String videoIn, String outDir,
                                                       double alpha, double lambda_c,
+                                                      double fl, double fh, double samplingRate,
+                                                      double chromAttenuation);
+
+    public native int amplifySpatialGdownTemporalIdeal(String videoIn, String outDir,
+                                                      double alpha, int level,
                                                       double fl, double fh, double samplingRate,
                                                       double chromAttenuation);
 

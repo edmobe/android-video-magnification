@@ -50,3 +50,23 @@ Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalIdeal
 
     return status;
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_example_videomagnification_MainActivity_amplifySpatialGdownTemporalIdeal(
+        JNIEnv *env, jobject thiz,
+        jstring video_in, jstring out_dir, jdouble alpha,
+        jint level, jdouble fl, jdouble fh, jdouble sampling_rate,
+        jdouble chrom_attenuation) {
+    const char *videoInCharArr = env->GetStringUTFChars(video_in, 0);
+    std::string inFile = std::string(videoInCharArr);
+    const char *outputDirCharArr = env->GetStringUTFChars(out_dir, 0);
+    std::string outDir = std::string(outputDirCharArr);
+
+    logDebug("Video reception - Input file", inFile);
+
+    int status = amplify_spatial_Gdown_temporal_ideal(env, inFile, outDir, alpha, level, fl, fh,
+                                                     sampling_rate, chrom_attenuation);
+
+    return status;
+}

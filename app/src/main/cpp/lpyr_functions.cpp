@@ -14,6 +14,7 @@
 
 #include "im_conv.h"
 #include "jniLogs.h"
+#include "lpyr_functions.h"
 
 using namespace std;
 using namespace cv;
@@ -76,9 +77,9 @@ vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex
     int max_ht = 1 + maxPyrHt(vidWidth, vidHeight, MAX_FILTER_SIZE, MAX_FILTER_SIZE);
 
     vector<vector<Mat>> pyr_stack(endIndex, vector<Mat>(max_ht));
-    vector<Mat> pyr_stack3(endIndex);
 
-    //double start, end;
+    logDebugAndShowUser(env, "Spatial processing", "Building LPYR stack");
+
     for (int i = startIndex; i < endIndex; i++) {
         // Define variables
         Mat frame, rgbframe, ntscframe;
@@ -96,10 +97,6 @@ vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex
 
         vector<Mat> pyr_output = buildLpyrfromGauss(ntscframe, max_ht);
         pyr_stack[i] = pyr_output;
-
-        logDebugAndShowUser(env, "Spatial processing - Building LPYR stack", "Frame " +
-                            to_string(i + 1) + " of " + to_string(endIndex));
-
     }
 
     return pyr_stack;

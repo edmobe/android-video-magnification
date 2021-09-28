@@ -33,6 +33,7 @@ add_library( # Sets the name of the library.
             jniLogs.cpp
             im_conv.cpp
             lpyr_functions.cpp
+            gdown_functions.cpp
             processing_functions.cpp
             native-lib.cpp )
 
