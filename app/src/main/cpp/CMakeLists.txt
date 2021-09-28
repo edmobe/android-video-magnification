@@ -31,6 +31,10 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
             jniLogs.cpp
+            ellf.c
+            cmplx.c
+            const.c
+            mtherr.c
             im_conv.cpp
             lpyr_functions.cpp
             gdown_functions.cpp

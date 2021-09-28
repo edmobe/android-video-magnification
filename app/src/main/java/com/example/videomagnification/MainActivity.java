@@ -97,8 +97,7 @@ public class MainActivity extends AppCompatActivity {
                         // TODO: Error handling
                         ((App) getApplication()).logDebug("Observable", integer.toString());
                         if (integer == 1) {
-                            int state = -1;
-
+                            int state = 1;
                             if (algorithmRadioButtonId == gaussianId) {
                                 // Gaussian Ideal
                                 // ============= FOR TESTING =================
@@ -130,7 +129,17 @@ public class MainActivity extends AppCompatActivity {
                                 // ===========================================
                             } else if (algorithmRadioButtonId == laplacianButterId) {
                                 // Butter
+                                // ============= FOR TESTING =================
                                 App.displayShortToast("Butter");
+                                videoPath =
+                                        "/storage/emulated/0/Pictures/video-magnification/baby.avi";
+                                state = amplifySpatialLpyrTemporalButter(videoPath,
+                                        FilenameUtils.getPath(videoPath),
+                                        30, 16, 0.4, 3, 30,
+                                        0.1);
+                                // ============= FOR RELEASE =================
+                                // TODO
+                                // ===========================================
                             } else {
                                 App.displayShortToast("Unknown algorithm");
                             }
@@ -181,5 +190,10 @@ public class MainActivity extends AppCompatActivity {
                                                       double alpha, int level,
                                                       double fl, double fh, double samplingRate,
                                                       double chromAttenuation);
+
+    public native int amplifySpatialLpyrTemporalButter(String videoIn, String outDir,
+                                                       double alpha, double lambda_c,
+                                                       double fl, double fh, double samplingRate,
+                                                       double chromAttenuation);
 
 }
