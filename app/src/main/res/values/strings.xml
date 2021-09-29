@@ -42,4 +42,5 @@
     <string name="roi_x">X</string>
     <string name="roi_y">Y</string>
     <string name="roi_mark">O</string>
+    <string name="convert_output_to_mp4">Convert output to MP4</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.application;
 
 import android.app.Application;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.threading;
 
 // Result.java
 public abstract class Result<T> {

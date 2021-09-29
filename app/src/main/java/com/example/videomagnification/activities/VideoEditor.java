@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.activities;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,6 +10,9 @@ import android.widget.ImageView;
 import android.widget.RadioGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.videomagnification.application.App;
+import com.example.videomagnification.R;
 
 public class VideoEditor extends AppCompatActivity {
 

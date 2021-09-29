@@ -1,7 +1,9 @@
-package com.example.videomagnification;
+package com.example.videomagnification.threading;
 
 import android.os.Handler;
 import android.os.Looper;
+
+import com.example.videomagnification.application.App;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;

@@ -1,9 +1,10 @@
-package com.example.videomagnification;
+package com.example.videomagnification.activities;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -13,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.arthenica.ffmpegkit.FFmpegKit;
 import com.arthenica.ffmpegkit.FFmpegKitConfig;
 import com.arthenica.ffmpegkit.FFmpegSession;
+import com.example.videomagnification.R;
+import com.example.videomagnification.application.App;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -118,16 +121,32 @@ public class VideoConverter extends AppCompatActivity {
                     public void onComplete() {
                         ((App) getApplication()).logDebug("Observable", "Completed!");
                         if (conversionType == 0) {
-                            Intent roiActivity = new Intent(getApplicationContext(),
-                                    RegionOfInterest.class);
-                            roiActivity.putExtra(getString(R.string.video_file_path),
-                                    outputVideoUri.toString());
-                            roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
-                                    inputVideoUri.toString());
-                            startActivity(roiActivity);
+                            // Get a handler that can be used to post to the main thread
+                            Handler mainHandler = new Handler(VideoConverter.this.getMainLooper());
+
+                            Runnable myRunnable = () -> {
+                                Intent roiActivity = new Intent(getApplicationContext(),
+                                        RegionOfInterest.class);
+                                roiActivity.putExtra(getString(R.string.video_file_path),
+                                        outputVideoUri.toString());
+                                roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
+                                        inputVideoUri.toString());
+                                startActivity(roiActivity);
+                            };
+
+                            mainHandler.post(myRunnable);
+
                         } else if (conversionType == 1) {
-                            progressBar.setVisibility(View.GONE);
-                            textConversionInfo.setText("Successfully converted video to MP4");
+                            // Get a handler that can be used to post to the main thread
+                            Handler mainHandler = new Handler(VideoConverter.this.getMainLooper());
+
+                            Runnable myRunnable = () -> {
+                                progressBar.setVisibility(View.GONE);
+                                textConversionInfo.setText("Successfully converted video to MP4");
+                            };
+
+                            mainHandler.post(myRunnable);
+
                         } else {
                             // TODO
                         }

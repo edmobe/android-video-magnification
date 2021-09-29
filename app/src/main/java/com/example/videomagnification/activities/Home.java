@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -12,6 +12,9 @@ import android.widget.Button;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import com.example.videomagnification.application.App;
+import com.example.videomagnification.R;
 
 public class Home extends AppCompatActivity {
 

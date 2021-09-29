@@ -8,7 +8,7 @@
     android:orientation="vertical"
     android:padding="16dp"
 
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
     <RadioGroup
         android:id="@+id/radio_group_algorithm"

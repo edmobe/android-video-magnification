@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.activities;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +14,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.videomagnification.R;
 
 public class RegionOfInterest extends AppCompatActivity {
 

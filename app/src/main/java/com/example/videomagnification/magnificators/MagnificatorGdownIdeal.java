@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.magnificators;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -32,21 +32,10 @@ public class MagnificatorGdownIdeal implements Callable<String>{
         this.chromAttenuation = chromAttenuation;
     }
 
-
-//    public native String amplify_spatial_lpyr_temporal_ideal(String videoIn, String outDir,
-//                                                             double alpha, double lambdaC,
-//                                                             double fl, double fh, double samplingRate,
-//                                                             double chromAttenuation);
-
     public native String amplify_spatial_gdown_temporal_ideal(String videoIn, String outDir,
                                                               double alpha, int level,
                                                               double fl, double fh, double samplingRate,
                                                               double chromAttenuation);
-
-//    public native String amplify_spatial_lpyr_temporal_butter(String videoIn, String outDir,
-//                                                              double alpha, double lambdaC,
-//                                                              double fl, double fh, double samplingRate,
-//                                                              double chromAttenuation);
 
     @Override
     public String call() {

@@ -1,4 +1,4 @@
-package com.example.videomagnification;
+package com.example.videomagnification.threading;
 
 public interface Callback<R> {
     void onComplete(R result);
