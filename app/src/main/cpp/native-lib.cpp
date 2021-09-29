@@ -93,7 +93,7 @@ Java_com_example_videomagnification_MainActivity_amplifySpatialLpyrTemporalButte
 
 }extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_VideoMagnificator_amplify_1spatial_1lpyr_1temporal_1ideal(
+Java_com_example_videomagnification_MagnificatorGdownIdeal_amplify_1spatial_1lpyr_1temporal_1ideal(
         JNIEnv *env, jobject thiz, jstring video_in, jstring out_dir,
         jdouble alpha, jdouble lambda_c, jdouble fl, jdouble fh, jdouble sampling_rate,
         jdouble chrom_attenuation) {
@@ -113,7 +113,7 @@ Java_com_example_videomagnification_VideoMagnificator_amplify_1spatial_1lpyr_1te
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_VideoMagnificator_amplify_1spatial_1gdown_1temporal_1ideal(
+Java_com_example_videomagnification_MagnificatorGdownIdeal_amplify_1spatial_1gdown_1temporal_1ideal(
         JNIEnv *env, jobject thiz, jstring video_in, jstring out_dir,
         jdouble alpha, jint level, jdouble fl, jdouble fh, jdouble sampling_rate,
         jdouble chrom_attenuation) {
@@ -133,7 +133,7 @@ Java_com_example_videomagnification_VideoMagnificator_amplify_1spatial_1gdown_1t
 
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_com_example_videomagnification_VideoMagnificator_amplify_1spatial_1lpyr_1temporal_1butter(
+Java_com_example_videomagnification_MagnificatorGdownIdeal_amplify_1spatial_1lpyr_1temporal_1butter(
         JNIEnv *env, jobject thiz, jstring video_in, jstring out_dir,
         jdouble alpha, jdouble lambda_c, jdouble fl, jdouble fh, jdouble sampling_rate,
         jdouble chrom_attenuation) {

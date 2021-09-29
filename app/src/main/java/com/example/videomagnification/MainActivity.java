@@ -9,7 +9,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.example.videomagnification.databinding.ActivityMainBinding;
 
@@ -44,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
     private int laplacianIdealId;
     private int laplacianButterId;
 
-    private VideoMagnificator magnificator;
+    private MagnificatorGdownIdeal magnificator;
+    private TaskRunner taskRunner;
 
 //    private WorkRequest videoMagnificationRequest;
 //    private Data algorithmData;
@@ -82,7 +82,9 @@ public class MainActivity extends AppCompatActivity {
         roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
         roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
 
-        magnificator = new ViewModelProvider(this).get(VideoMagnificator.class);
+        taskRunner = new TaskRunner();
+
+//        magnificator = new ViewModelProvider(this).get(MagnificatorGdownIdeal.class);
 
 //        Data.Builder dataBuilder = new Data.Builder()
 //                .putString("videoIn", videoPath)
@@ -104,15 +106,22 @@ public class MainActivity extends AppCompatActivity {
             // UNKNOWN ALGORITHM
             // TODO
         } else {
-            gaussianIdealInBackground(result -> {
-                if (result instanceof Result.Success) {
-                    finish(((Result.Success<String>) result).data);
-                } else {
-                    // ERROR
-                    App.displayShortToast("Error al finalizar");
-                    // TODO
-                }
+            videoPath = "/storage/emulated/0/Pictures/video-magnification/baby.avi";
+            taskRunner.executeAsync(new MagnificatorGdownIdeal(
+                    videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+                    (double) 14 / (double) 16, (double) 16 / (double) 6, 30,
+                    1), (data) -> {
+                finish(data);
             });
+//            gaussianIdealInBackground(result -> {
+//                if (result instanceof Result.Success) {
+//                    finish(((Result.Success<String>) result).data);
+//                } else {
+//                    // ERROR
+//                    App.displayShortToast("Error al finalizar");
+//                    // TODO
+//                }
+//            });
 
 //            App.getExecutorService().execute(() -> {
 //
@@ -162,47 +171,47 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void gaussianIdealInBackground(final Callback <String> callback) {
-        App.getExecutorService().execute(() -> {
-            try {
-                // ============= FOR TESTING =================
-                videoPath = "/storage/emulated/0/Pictures/video-magnification/baby2.avi";
-                String state = magnificator.amplify_spatial_gdown_temporal_ideal(
-                        videoPath, FilenameUtils.getPath(videoPath), 150, 6,
-                        (double) 14 / (double) 16, (double) 16 / (double) 6, 30,
-                        1);
-                if (state.equals("error")) {
-                    callback.onComplete(new Result.Error<>(
-                            new Exception("Error in magnification")));
-                } else {
-                    callback.onComplete(new Result.Success<>(state));
-                }
-                // ============= FOR RELEASE =================
-                // TODO
-                //
-                //                dataBuilder = new Data.Builder()
-                //                        .putInt("algorithm", 0)
-                //                        .putString("videoIn", videoPath)
-                //                        .putString("outDir", FilenameUtils.getPath(videoPath))
-                //                        .putDouble("alpha", 150)
-                //                        .putInt("level", 6)
-                //                        .putDouble("fl", (double) 14 / (double) 6)
-                //                        .putDouble("fh", (double) 16 / (double) 6)
-                //                        .putDouble("samplingRate", 30)
-                //                        .putDouble("chromAttenuation", 1);
-                //                algorithmData = dataBuilder.build();
-
-                //                algorithmData = dataBuilder
-                //                        .putInt("algorithm", 0)
-                //                        .putInt("level", level)
-                //                        .build();
-                // ===========================================
-            } catch (Exception e) {
-                // ERROR
-                // TODO
-            }
-        });
-    }
+//    public void gaussianIdealInBackground(final Callback <String> callback) {
+//        App.getExecutorService().execute(() -> {
+//            try {
+//                // ============= FOR TESTING =================
+//                videoPath = "/storage/emulated/0/Pictures/video-magnification/baby2.avi";
+//                String state = magnificator.amplify_spatial_gdown_temporal_ideal(
+//                        videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+//                        (double) 14 / (double) 16, (double) 16 / (double) 6, 30,
+//                        1);
+//                if (state.equals("error")) {
+//                    callback.onComplete(new Result.Error<>(
+//                            new Exception("Error in magnification")));
+//                } else {
+//                    callback.onComplete(new Result.Success<>(state));
+//                }
+//                // ============= FOR RELEASE =================
+//                // TODO
+//                //
+//                //                dataBuilder = new Data.Builder()
+//                //                        .putInt("algorithm", 0)
+//                //                        .putString("videoIn", videoPath)
+//                //                        .putString("outDir", FilenameUtils.getPath(videoPath))
+//                //                        .putDouble("alpha", 150)
+//                //                        .putInt("level", 6)
+//                //                        .putDouble("fl", (double) 14 / (double) 6)
+//                //                        .putDouble("fh", (double) 16 / (double) 6)
+//                //                        .putDouble("samplingRate", 30)
+//                //                        .putDouble("chromAttenuation", 1);
+//                //                algorithmData = dataBuilder.build();
+//
+//                //                algorithmData = dataBuilder
+//                //                        .putInt("algorithm", 0)
+//                //                        .putInt("level", level)
+//                //                        .build();
+//                // ===========================================
+//            } catch (Exception e) {
+//                // ERROR
+//                // TODO
+//            }
+//        });
+//    }
 
 
 
@@ -212,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
 //                    .build();
 //
 //            videoMagnificationRequest =
-//                    new OneTimeWorkRequest.Builder(VideoMagnificator.class)
+//                    new OneTimeWorkRequest.Builder(MagnificatorGdownIdeal.class)
 //                            .setInputData(algorithmData)
 //                            .setConstraints(constraints)
 //                            .build();
@@ -245,6 +254,14 @@ public class MainActivity extends AppCompatActivity {
         };
 
         mainHandler.post(myRunnable);
+
+//        Intent videoConverterActivity = new Intent(MainActivity.this,
+//                VideoConverter.class);
+//        videoConverterActivity.putExtra(MainActivity.this.getString(
+//                R.string.video_file_path), state);
+//        videoConverterActivity.putExtra(MainActivity.this.getString(
+//                R.string.conversion_type), 1);
+//        MainActivity.this.startActivity(videoConverterActivity);
 
     }
 

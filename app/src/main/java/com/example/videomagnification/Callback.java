@@ -1,5 +1,5 @@
 package com.example.videomagnification;
 
-public interface Callback<T> {
-    void onComplete(Result<T> result);
+public interface Callback<R> {
+    void onComplete(R result);
 }

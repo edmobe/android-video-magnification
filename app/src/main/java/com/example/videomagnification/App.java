@@ -21,7 +21,8 @@ public class App extends Application {
 
     private static boolean handler;
     private static Context context;
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    // TODO: Define thread count
+    private static ExecutorService executorService = Executors.newFixedThreadPool(100);
 
     public void onCreate() {
         super.onCreate();

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -116,13 +117,20 @@ public class VideoConverter extends AppCompatActivity {
                     @Override
                     public void onComplete() {
                         ((App) getApplication()).logDebug("Observable", "Completed!");
-                        Intent roiActivity = new Intent(getApplicationContext(),
-                                RegionOfInterest.class);
-                        roiActivity.putExtra(getString(R.string.video_file_path),
-                                outputVideoUri.toString());
-                        roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
-                                inputVideoUri.toString());
-                        startActivity(roiActivity);
+                        if (conversionType == 0) {
+                            Intent roiActivity = new Intent(getApplicationContext(),
+                                    RegionOfInterest.class);
+                            roiActivity.putExtra(getString(R.string.video_file_path),
+                                    outputVideoUri.toString());
+                            roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
+                                    inputVideoUri.toString());
+                            startActivity(roiActivity);
+                        } else if (conversionType == 1) {
+                            progressBar.setVisibility(View.GONE);
+                            textConversionInfo.setText("Successfully converted video to MP4");
+                        } else {
+                            // TODO
+                        }
                     }
                 });
 
