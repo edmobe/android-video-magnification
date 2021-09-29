@@ -34,8 +34,10 @@
     <string name="level">Level</string>
     <string name="r2">R2</string>
     <string name="r1">R1</string>
+    <string name="conversion_type">Conversion type</string>
     <string name="converting_video">Converting video...</string>
-    <string name="why_convert">Please wait. The video must be converted to a specific format so that the Video Magnificator can process it.</string>
+    <string name="why_convert_input">Please wait. The video must be converted to AVI format so that the Video Magnificator can process it.</string>
+    <string name="why_convert_output">Please wait. The video is being converted back to MP4.</string>
     <string name="roi">Region of Interest</string>
     <string name="roi_x">X</string>
     <string name="roi_y">Y</string>

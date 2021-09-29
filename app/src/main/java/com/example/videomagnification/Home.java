@@ -67,6 +67,7 @@ public class Home extends AppCompatActivity {
                             VideoConverter.class);
                     videoConverterActivity.putExtra(getString(R.string.video_file_path),
                             inputVideoUri.toString());
+                    videoConverterActivity.putExtra(getString(R.string.conversion_type), 0);
                     startActivity(videoConverterActivity);
                 } else {
                     ((App)getApplication()).displayShortToast(

@@ -14,10 +14,14 @@ import android.widget.Toast;
 
 import org.apache.commons.io.FilenameUtils;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class App extends Application {
 
     private static boolean handler;
     private static Context context;
+    private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     public void onCreate() {
         super.onCreate();
@@ -27,6 +31,8 @@ public class App extends Application {
     public static Context getAppContext() {
         return App.context;
     }
+
+    public static ExecutorService getExecutorService() { return executorService; }
 
     public static void displayShortToast(String string) {
         handler = new Handler(Looper.getMainLooper()).post(() -> {

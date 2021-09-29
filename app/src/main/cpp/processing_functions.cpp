@@ -49,7 +49,7 @@ constexpr auto BAR_WIDTH = 70;
 * License : Please refer to the LICENCE file (MIT license)
 * Original date : June 2012
 */
-int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
+string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                         double lambda_c, double fl, double fh, double samplingRate,
                                         double chromAttenuation) {
 
@@ -76,7 +76,7 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
     // Creates the result video name
     string outName = outDir + name + "-ideal-from-" + to_string(fl) + "-to-" +
                      to_string(fh) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
-                     "-chromAtn-" + to_string(chromAttenuation) + ".avi";
+                     "-chromAtn-" + to_string(chromAttenuation) + ".mp4";
 
     logDebug("Video reception - Output file", outName);
 
@@ -90,7 +90,7 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
     if (!video.isOpened()) {
         logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
         updateProgress(env, 100);
-        return -1;
+        return "error";
     }
 
     // Extract video info
@@ -226,7 +226,7 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
     logDebugAndShowUser(env, "Video output", "Finished processing in " +
                         to_string(etime - itime) + " seconds");
 
-    return 0;
+    return outName;
 }
 
 /**
@@ -247,7 +247,7 @@ int amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDi
 * License : Please refer to the LICENCE file (MIT license)
 * Original date : June 2012
 **/
-int amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
+string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                          int level, double fl, double fh, int samplingRate,
                                          double chromAttenuation) {
     double itime, etime;
@@ -286,7 +286,7 @@ int amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outD
     if (!video.isOpened()) {
         logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
         updateProgress(env, 100);
-        return -1;
+        return "error";
     }
 
     // Extracting video info
@@ -399,7 +399,7 @@ int amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outD
     logDebugAndShowUser(env, "Video output", "Finished processing in " +
                                              to_string(etime - itime) + " seconds");
 
-    return 0;
+    return outName;
 }
 
 /**
@@ -421,7 +421,7 @@ int amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outD
 * License : Please refer to the LICENCE file (MIT license)
 * Original date : June 2012
 **/
-int amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string outDir, double alpha,
+string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string outDir, double alpha,
                                          double lambda_c, double fl, double fh, int samplingRate,
                                          double chromAttenuation) {
 
@@ -477,7 +477,7 @@ int amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string outD
     if (!video.isOpened()) {
         logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
         updateProgress(env, 100);
-        return -1;
+        return "error";
     }
 
     // Extracting video info
@@ -661,5 +661,5 @@ int amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string outD
     logDebugAndShowUser(env, "Video output", "Finished processing in " +
                                              to_string(etime - itime) + " seconds");
 
-    return 0;
+    return outName;
 }

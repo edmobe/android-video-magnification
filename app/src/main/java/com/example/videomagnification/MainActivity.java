@@ -9,16 +9,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.videomagnification.databinding.ActivityMainBinding;
 
 import org.apache.commons.io.FilenameUtils;
-
-import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Observer;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
     // Used to load the 'native-lib' library on application startup.
@@ -49,6 +44,13 @@ public class MainActivity extends AppCompatActivity {
     private int laplacianIdealId;
     private int laplacianButterId;
 
+    private VideoMagnificator magnificator;
+
+//    private WorkRequest videoMagnificationRequest;
+//    private Data algorithmData;
+//    private Constraints constraints;
+//    private String finalState;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,91 +79,172 @@ public class MainActivity extends AppCompatActivity {
         gaussianId = R.id.radio_gaussian_ideal;
         laplacianIdealId = R.id.radio_laplacian_ideal;
         laplacianButterId = R.id.radio_laplacian_butterworth;
+        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
+        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
 
-//        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
-//        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
+        magnificator = new ViewModelProvider(this).get(VideoMagnificator.class);
 
-        Observable<Integer> observable = Observable.create(emitter -> {
-            emitter.onNext(1);
-            emitter.onComplete();
+//        Data.Builder dataBuilder = new Data.Builder()
+//                .putString("videoIn", videoPath)
+//                .putString("outDir", FilenameUtils.getPath(videoPath))
+//                .putDouble("alpha", alpha)
+//                .putDouble("fl", fl)
+//                .putDouble("fh", fh)
+//                .putDouble("samplingRate", sampling)
+//                .putDouble("chromAttenuation", chromAtt);
+
+
+        boolean gaussianIdeal = algorithmRadioButtonId == gaussianId;
+        boolean laplacianIdeal = algorithmRadioButtonId == laplacianIdealId;
+        boolean laplacianButter = algorithmRadioButtonId == laplacianButterId;
+        boolean knownAlgorithm = gaussianIdeal || laplacianIdeal || laplacianButter;
+
+
+        if (!knownAlgorithm) {
+            // UNKNOWN ALGORITHM
+            // TODO
+        } else {
+            gaussianIdealInBackground(result -> {
+                if (result instanceof Result.Success) {
+                    finish(((Result.Success<String>) result).data);
+                } else {
+                    // ERROR
+                    App.displayShortToast("Error al finalizar");
+                    // TODO
+                }
+            });
+
+//            App.getExecutorService().execute(() -> {
+//
+//
+//                    } else if (laplacianIdeal) {
+            // LAPLACIAN IDEAL
+            // ============= FOR TESTING =================
+//                        videoPath = "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
+//                dataBuilder = new Data.Builder()
+//                        .putInt("algorithm", 1)
+//                        .putString("videoIn", videoPath)
+//                        .putString("outDir", FilenameUtils.getPath(videoPath))
+//                        .putDouble("alpha", 100)
+//                        .putDouble("lambdaC", 10)
+//                        .putDouble("fl", 100)
+//                        .putDouble("fh", 120)
+//                        .putDouble("samplingRate", 600)
+//                        .putDouble("chromAttenuation", 0);
+//                algorithmData = dataBuilder.build();
+            // ============= FOR RELEASE =================
+//                algorithmData = dataBuilder
+//                        .putInt("algorithm", 1)
+//                        .putDouble("lambdaC", lambdaC)
+//                        .build();
+            // ===========================================
+//                    } else {
+            // LAPLACIAN BUTTER
+            // ============= FOR TESTING =================
+//                        videoPath = "/storage/emulated/0/Pictures/video-magnification/baby.avi";
+//                dataBuilder = new Data.Builder()
+//                        .putInt("algorithm", 2)
+//                        .putString("videoIn", videoPath)
+//                        .putString("outDir", FilenameUtils.getPath(videoPath))
+//                        .putDouble("alpha", 30)
+//                        .putDouble("lambdaC", 16)
+//                        .putDouble("fl", 0.4)
+//                        .putDouble("fh", 3)
+//                        .putDouble("samplingRate", 30)
+//                        .putDouble("chromAttenuation", 0.1);
+//                algorithmData = dataBuilder.build();
+            // ============= FOR RELEASE =================
+//                algorithmData = dataBuilder
+//                        .putInt("algorithm", 2)
+//                        .putDouble("lambdaC", lambdaC)
+//                        .build();
+            // ===========================================
+        }
+    }
+
+    public void gaussianIdealInBackground(final Callback <String> callback) {
+        App.getExecutorService().execute(() -> {
+            try {
+                // ============= FOR TESTING =================
+                videoPath = "/storage/emulated/0/Pictures/video-magnification/baby2.avi";
+                String state = magnificator.amplify_spatial_gdown_temporal_ideal(
+                        videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+                        (double) 14 / (double) 16, (double) 16 / (double) 6, 30,
+                        1);
+                if (state.equals("error")) {
+                    callback.onComplete(new Result.Error<>(
+                            new Exception("Error in magnification")));
+                } else {
+                    callback.onComplete(new Result.Success<>(state));
+                }
+                // ============= FOR RELEASE =================
+                // TODO
+                //
+                //                dataBuilder = new Data.Builder()
+                //                        .putInt("algorithm", 0)
+                //                        .putString("videoIn", videoPath)
+                //                        .putString("outDir", FilenameUtils.getPath(videoPath))
+                //                        .putDouble("alpha", 150)
+                //                        .putInt("level", 6)
+                //                        .putDouble("fl", (double) 14 / (double) 6)
+                //                        .putDouble("fh", (double) 16 / (double) 6)
+                //                        .putDouble("samplingRate", 30)
+                //                        .putDouble("chromAttenuation", 1);
+                //                algorithmData = dataBuilder.build();
+
+                //                algorithmData = dataBuilder
+                //                        .putInt("algorithm", 0)
+                //                        .putInt("level", level)
+                //                        .build();
+                // ===========================================
+            } catch (Exception e) {
+                // ERROR
+                // TODO
+            }
         });
+    }
 
-        observable
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(new Observer<Integer>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) { }
 
-                    @Override
-                    public void onNext(@NonNull Integer integer) {
-                        // TODO: Error handling
-                        ((App) getApplication()).logDebug("Observable", integer.toString());
-                        if (integer == 1) {
-                            int state = 1;
-                            if (algorithmRadioButtonId == gaussianId) {
-                                // Gaussian Ideal
-                                // ============= FOR TESTING =================
-                                App.displayShortToast("Gaussian ideal");
-                                videoPath =
-                                        "/storage/emulated/0/Pictures/video-magnification/face.avi";
-                                state = amplifySpatialGdownTemporalIdeal(videoPath,
-                                        FilenameUtils.getPath(videoPath),
-                                        50,4,  (double)5 / (double)6, 1,
-                                        30, 1);
-                                // ============= FOR RELEASE =================
-//                            state = amplifySpatialLpyrTemporalIdeal(videoPath,
-//                                    FilenameUtils.getPath(videoPath),
-//                                    alpha, lambdaC, fl, fh, sampling, chromAtt);
-                            } else if (algorithmRadioButtonId == laplacianIdealId) {
-                                // Laplacian Ideal
-                                // ============= FOR TESTING =================
-                                App.displayShortToast("Laplacian ideal");
-                                videoPath =
-                                        "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
-                                state = amplifySpatialLpyrTemporalIdeal(videoPath,
-                                        FilenameUtils.getPath(videoPath),
-                                        100, 10, 100, 120, 600,
-                                        0);
-                                // ============= FOR RELEASE =================
-//                            state = amplifySpatialLpyrTemporalIdeal(videoPath,
-//                                    FilenameUtils.getPath(videoPath),
-//                                    alpha, lambdaC, fl, fh, sampling, chromAtt);
-                                // ===========================================
-                            } else if (algorithmRadioButtonId == laplacianButterId) {
-                                // Butter
-                                // ============= FOR TESTING =================
-                                App.displayShortToast("Butter");
-                                videoPath =
-                                        "/storage/emulated/0/Pictures/video-magnification/baby.avi";
-                                state = amplifySpatialLpyrTemporalButter(videoPath,
-                                        FilenameUtils.getPath(videoPath),
-                                        30, 16, 0.4, 3, 30,
-                                        0.1);
-                                // ============= FOR RELEASE =================
-                                // TODO
-                                // ===========================================
-                            } else {
-                                App.displayShortToast("Unknown algorithm");
-                            }
-                            //App.displayShortToast(String.valueOf(state));
-                        }
-                    }
 
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        App.displayShortToast(
-                                "Error while processing the video!"
-                        );
-                        ((App) getApplication()).logError("Video processing - Error",
-                                e.getLocalizedMessage());
-                    }
 
-                    @Override
-                    public void onComplete() {
-                        ((App) getApplication()).logDebug(
-                                "Video processing - Observable", "Completed!");
-                    }
-                });
+//            constraints = new Constraints.Builder()
+//                    .setRequiresStorageNotLow(true)
+//                    .build();
+//
+//            videoMagnificationRequest =
+//                    new OneTimeWorkRequest.Builder(VideoMagnificator.class)
+//                            .setInputData(algorithmData)
+//                            .setConstraints(constraints)
+//                            .build();
+//
+//            WorkManager
+//                    .getInstance(getApplicationContext())
+//                    .enqueue(videoMagnificationRequest);
+
+//    public void processFinalState() {
+//        if (!finalState.equals("error")) {
+//
+//        } else {
+//            // Final state error
+//            // TODO
+//        }
+//    }
+
+    public void finish(String state) {
+        // Get a handler that can be used to post to the main thread
+        Handler mainHandler = new Handler(MainActivity.this.getMainLooper());
+
+        Runnable myRunnable = () -> {
+            Intent videoConverterActivity = new Intent(MainActivity.this,
+                    VideoConverter.class);
+            videoConverterActivity.putExtra(MainActivity.this.getString(
+                    R.string.video_file_path), state);
+            videoConverterActivity.putExtra(MainActivity.this.getString(
+                    R.string.conversion_type), 1);
+            MainActivity.this.startActivity(videoConverterActivity);
+        };
+
+        mainHandler.post(myRunnable);
 
     }
 
@@ -181,19 +264,5 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public native int amplifySpatialLpyrTemporalIdeal(String videoIn, String outDir,
-                                                      double alpha, double lambda_c,
-                                                      double fl, double fh, double samplingRate,
-                                                      double chromAttenuation);
-
-    public native int amplifySpatialGdownTemporalIdeal(String videoIn, String outDir,
-                                                      double alpha, int level,
-                                                      double fl, double fh, double samplingRate,
-                                                      double chromAttenuation);
-
-    public native int amplifySpatialLpyrTemporalButter(String videoIn, String outDir,
-                                                       double alpha, double lambda_c,
-                                                       double fl, double fh, double samplingRate,
-                                                       double chromAttenuation);
-
 }
+//
