@@ -12,7 +12,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.arthenica.ffmpegkit.FFmpegKit;
-import com.arthenica.ffmpegkit.FFmpegKitConfig;
 import com.arthenica.ffmpegkit.FFmpegSession;
 import com.example.videomagnification.R;
 import com.example.videomagnification.application.App;
@@ -48,12 +47,12 @@ public class VideoConverter extends AppCompatActivity {
         // 0: input, 1: output, -1: error
         int conversionType = intent.getIntExtra(getString(R.string.conversion_type), -1);
 
-        inputVideoUri = Uri.parse(inputFileName);
         progressBar = findViewById(R.id.progress_convert);
         textConversionInfo = findViewById(R.id.text_conversion_info);
 
         if (conversionType == 0) {
             textConversionInfo.setText(getString(R.string.why_convert_input));
+            inputVideoUri = Uri.parse(inputFileName);
         } else if (conversionType == 1) {
             textConversionInfo.setText(getString(R.string.why_convert_output));
         } else {
@@ -88,7 +87,7 @@ public class VideoConverter extends AppCompatActivity {
                                 if (conversionType == 0)
                                     midVideoPath = convertMp4ToMjpeg(inputVideoUri);
                                 else
-                                    midVideoPath = convertAviToMjpeg(inputVideoUri);
+                                    midVideoPath = convertAviToMjpeg(inputFileName);
                                 progressBar.setProgress(60);
                                 ((App) getApplication()).logDebug(
                                         "Converting - Mid video path", midVideoPath);
@@ -152,8 +151,6 @@ public class VideoConverter extends AppCompatActivity {
                         }
                     }
                 });
-
-
     }
 
     private boolean createDirectoryIfNeeded() {
@@ -182,8 +179,7 @@ public class VideoConverter extends AppCompatActivity {
 
     private String convertMp4ToMjpeg(Uri inputVideoUri) {
         // TODO: Error handling
-        String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
-                this, inputVideoUri);
+        String inputVideoPath = inputVideoUri.getPath();
         ((App)getApplication()).logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
@@ -199,16 +195,14 @@ public class VideoConverter extends AppCompatActivity {
         return midVideoPath;
     }
 
-    private String convertAviToMjpeg(Uri inputVideoUri) {
+    private String convertAviToMjpeg(String inputVideoPath) {
         // TODO: Error handling
-        String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
-                this, inputVideoUri);
         ((App)getApplication()).logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String midVideoPath = fileDir + inputBaseName + ".mjpeg";
         FFmpegSession session1 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
+                "-y -i " + inputVideoPath + " -vcodec libx264 -acodec aac " + midVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 1 info: " + session1.getAllLogsAsString());
         ((App)getApplication()).logDebug(
@@ -223,7 +217,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = fileDir + inputBaseName + ".avi";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mjpeg " + outputVideoPath);
+                "-y -i " + inputVideoPath+ " -vcodec libx264 -acodec aac " + outputVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
         ((App)getApplication()).logDebug(

@@ -168,6 +168,5 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         ((App) getApplication()).logDebug("Video magnification", "Stopping threads...");
         App.getExecutorService().shutdownNow();
-        ((App) getApplication()).logDebug("Video magnification", "Threads stopped");
     }
 }

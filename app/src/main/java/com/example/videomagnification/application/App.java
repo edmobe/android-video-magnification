@@ -22,7 +22,7 @@ public class App extends Application {
     private static boolean handler;
     private static Context context;
     // TODO: Define thread count
-    private static ExecutorService executorService = Executors.newFixedThreadPool(100);
+    private static ExecutorService executorService = Executors.newCachedThreadPool();
 
     public void onCreate() {
         super.onCreate();
