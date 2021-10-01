@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
+import com.example.videomagnification.application.App;
 import com.example.videomagnification.databinding.ActivityMainBinding;
 import com.example.videomagnification.magnificators.MagnificatorGdownIdeal;
 import com.example.videomagnification.magnificators.MagnificatorLpyrButter;
@@ -122,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (laplacianIdeal) {
                 // LAPLACIAN IDEAL
                 videoPath = "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
+
                 taskRunner.executeAsync(new MagnificatorLpyrIdeal(
                         videoPath, FilenameUtils.getPath(videoPath), 50, 10,
                         72, 92, 600, 0), (data) -> {
@@ -157,4 +159,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public static boolean isShutdown() {
+        return App.getExecutorService().isShutdown();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ((App) getApplication()).logDebug("Video magnification", "Stopping threads...");
+        App.getExecutorService().shutdownNow();
+        ((App) getApplication()).logDebug("Video magnification", "Threads stopped");
+    }
 }

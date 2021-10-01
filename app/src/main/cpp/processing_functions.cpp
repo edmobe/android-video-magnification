@@ -30,7 +30,6 @@ extern "C" int butter_coeff(int, int, double, double);
 constexpr auto MAX_FILTER_SIZE = 5;
 constexpr auto BAR_WIDTH = 70;
 
-
 /**
 * Spatial Filtering : Laplacian pyramid
 * Temporal Filtering : Ideal bandpass
@@ -52,6 +51,9 @@ constexpr auto BAR_WIDTH = 70;
 string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                         double lambda_c, double fl, double fh, double samplingRate,
                                         double chromAttenuation) {
+
+    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -112,6 +114,12 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
     logDebug("Video reception - Video info (FPS)", to_string(fr));
     logDebug("Video reception - Maximum pyramid height", to_string(max_ht));
 
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Video reception - Interrupted", "Process stopped");
+        video.release();
+        return "error";
+    }
+
     updateProgress(env, 5);
 
     /*
@@ -119,6 +127,14 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
      * */
 
     vector<vector<Mat>> pyr_stack = build_Lpyr_stack(env, inFile, startIndex, endIndex);
+
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Spatial processing - Stopped", "Thread is canceled");
+        updateProgress(env, 0);
+        video.release();
+        return "error";
+    }
+
     updateProgress(env, 15);
     logDebug("Spatial processing - LPYR stack", "Finished building!");
 
@@ -128,14 +144,26 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
     vector<vector<Mat>> filteredStack = ideal_bandpassing_lpyr(env, pyr_stack, 3, fl, fh,
                                                                samplingRate);
 
-    updateProgress(env, 70);
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Video processing - Stopped", "Thread is canceled");
+        updateProgress(env, 0);
+        video.release();
+        return "error";
+    }
 
+    updateProgress(env, 70);
     logDebugAndShowUser(env, "Video output",
                         "Preparing output video");
 
     /*
      * ================= VIDEO OUTPUT =================
      * */
+
+    // Render on the input video to make the output video
+    // Define the codec and create VideoWriter object
+    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
+                         Size(vidWidth, vidHeight));
+
     Scalar colorAmp(alpha, alpha * chromAttenuation, alpha * chromAttenuation);
 
     // Amplify color channels in NTSC
@@ -146,11 +174,6 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
             multiply(filteredStack[frame][levelFrame], colorAmp, filteredStack[frame][levelFrame]);
         }
     }
-
-    // Render on the input video to make the output video
-    // Define the codec and create VideoWriter object
-    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
-                         Size(vidWidth, vidHeight));
 
     int k = 0;
 
@@ -250,6 +273,10 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
 string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                          int level, double fl, double fh, int samplingRate,
                                          double chromAttenuation) {
+
+    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
+
     double itime, etime;
     itime = omp_get_wtime();
 
@@ -309,6 +336,12 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     logDebug("Video reception - Video info (Width)", to_string(vidWidth));
     logDebug("Video reception - Video info (FPS)", to_string(fr));
 
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Video reception - Stopped", "Thread is canceled");
+        video.release();
+        return "error";
+    }
+
     updateProgress(env, 5);
 
     /*
@@ -316,6 +349,14 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
      * */
 
     vector<Mat> Gdown_stack = build_GDown_stack(env, inFile, startIndex, endIndex, level);
+
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Spatial processing - Stopped", "Thread is canceled");
+        updateProgress(env, 0);
+        video.release();
+        return "error";
+    }
+
     updateProgress(env, 15);
     logDebug("Spatial processing - GDown stack", "Finished building!");
 
@@ -324,6 +365,13 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
      * */
 
     vector<Mat> filtered_stack = ideal_bandpassing(Gdown_stack, 1, fl, fh, samplingRate);
+
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Video processing - Stopped", "Thread is canceled");
+        updateProgress(env, 0);
+        video.release();
+        return "error";
+    }
 
     updateProgress(env, 70);
 
@@ -425,9 +473,11 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                                          double lambda_c, double fl, double fh, int samplingRate,
                                          double chromAttenuation) {
 
+    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
+
     double itime, etime;
     itime = omp_get_wtime();
-
 
     // Coefficients for IIR butterworth filter
     // Equivalent in Matlab/Otave to:
@@ -499,6 +549,13 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     logDebug("Video reception - Video info (Height)", to_string(vidHeight));
     logDebug("Video reception - Video info (Width)", to_string(vidWidth));
     logDebug("Video reception - Video info (FPS)", to_string(fr));
+
+    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+        logDebug("Video reception - Stopped", "Thread is canceled");
+        video.release();
+        return "error";
+    }
+
     updateProgress(env, 5);
 
     // Write video
@@ -541,6 +598,18 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     float progress = 0;
 
     for (int i = startIndex; i < endIndex - 1; i++) {
+
+        // Validate if thread stopped every 10 frames
+        if(i % 10 == 0) {
+            if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
+                logDebug("Video processing - Stopped", "Thread is canceled");
+                updateProgress(env, 0);
+                video.release();
+                videoOut.release();
+                return "error";
+            }
+        }
+
         progress = (float) i / (float) endIndex;
 
         logDebugAndShowUser(env, "Video processing", "Processing frame " + to_string(i) +

@@ -25,4 +25,8 @@ public class TaskRunner {
             }
         });
     }
+
+    public Executor getExecutor() {
+        return executor;
+    }
 }

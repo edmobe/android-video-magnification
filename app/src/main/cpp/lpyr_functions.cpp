@@ -81,6 +81,7 @@ vector<vector<Mat>> build_Lpyr_stack(JNIEnv *env, string vidFile, int startIndex
     logDebugAndShowUser(env, "Spatial processing", "Building LPYR stack");
 
     for (int i = startIndex; i < endIndex; i++) {
+
         // Define variables
         Mat frame, rgbframe, ntscframe;
 
