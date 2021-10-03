@@ -433,6 +433,11 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     updateProgress(env, 90);
 
     for (int i = startIndex; i < endIndex; i++) {
+        // Extract BPM
+        putText(filtered_stack[i], "Hello world", Point(30, 30),
+                FONT_HERSHEY_COMPLEX_SMALL, 0.8,
+                Scalar(200, 200, 250), 1, LINE_AA);
+
         // Write the frame into the file 'outcpp.avi'
         videoOut.write(filtered_stack[i]);
     }

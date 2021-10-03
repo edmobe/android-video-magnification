@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.arthenica.ffmpegkit.FFmpegKit;
+import com.arthenica.ffmpegkit.FFmpegKitConfig;
 import com.arthenica.ffmpegkit.FFmpegSession;
 import com.example.videomagnification.R;
 import com.example.videomagnification.application.App;
@@ -179,11 +180,15 @@ public class VideoConverter extends AppCompatActivity {
 
     private String convertMp4ToMjpeg(Uri inputVideoUri) {
         // TODO: Error handling
-        String inputVideoPath = inputVideoUri.getPath();
+        String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
+                this, inputVideoUri);
         ((App)getApplication()).logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String midVideoPath = fileDir + inputBaseName + ".mjpeg";
+//        FFmpegSession session0 = FFmpegKit.execute("-codecs");
+//        ((App)getApplication()).logDebug(
+//                "Native lib", "Session 0 info: " + session0.getAllLogsAsString());
         FFmpegSession session1 = FFmpegKit.execute(
                 "-y -i " + inputVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
         ((App)getApplication()).logDebug(
@@ -202,7 +207,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String midVideoPath = fileDir + inputBaseName + ".mjpeg";
         FFmpegSession session1 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath + " -vcodec libx264 -acodec aac " + midVideoPath);
+                "-y -i " + inputVideoPath + " -vcodec mpeg4 -acodec aac " + midVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 1 info: " + session1.getAllLogsAsString());
         ((App)getApplication()).logDebug(
@@ -217,7 +222,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = fileDir + inputBaseName + ".avi";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -vcodec libx264 -acodec aac " + outputVideoPath);
+                "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mjpeg " + outputVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
         ((App)getApplication()).logDebug(
@@ -233,7 +238,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = fileDir + inputBaseName + ".mp4";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mjpeg " + outputVideoPath);
+                "-y -i " + inputVideoPath+ " -vcodec mpeg4 -acodec aac " + outputVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
         ((App)getApplication()).logDebug(
