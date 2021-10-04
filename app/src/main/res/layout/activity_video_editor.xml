@@ -12,30 +12,27 @@
 
     <RadioGroup
         android:id="@+id/radio_group_algorithm"
-        android:layout_width="200dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="10dp"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4">
 
         <RadioButton
             android:id="@+id/radio_gaussian_ideal"
-            android:layout_width="match_parent"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="@string/gaussian_ideal_bandpass" />
-
-        <RadioButton
-            android:id="@+id/radio_laplacian_ideal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/laplacian_ideal_bandpass" />
+            android:text="@string/heart_rate"
+            android:textAlignment="textStart" />
 
         <RadioButton
             android:id="@+id/radio_laplacian_butterworth"
-            android:layout_width="match_parent"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:text="@string/laplacian_butterworth" />
+            android:text="@string/respiratory_rate"
+            android:textAlignment="textStart" />
 
     </RadioGroup>
 
@@ -72,47 +69,12 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="375dp"
-        android:text="@string/select_an_algorithm"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/textView8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="106dp"
-        android:layout_marginBottom="375dp"
+        android:layout_marginBottom="300dp"
         android:text="@string/extract"
-        android:textAlignment="viewEnd"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <RadioGroup
-        android:id="@+id/radio_group_extract"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="1dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView8">
-
-        <RadioButton
-            android:id="@+id/radio_heart_rate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/heart_rate" />
-
-        <RadioButton
-            android:id="@+id/radio_respiratory_rate"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/respiratory_rate" />
-
-    </RadioGroup>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btn_next_editor"

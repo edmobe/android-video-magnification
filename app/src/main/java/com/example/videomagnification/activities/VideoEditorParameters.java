@@ -97,7 +97,14 @@ public class VideoEditorParameters extends AppCompatActivity {
         videoPathTextView = findViewById(R.id.text_video_path);
         videoPathTextView.setText(videoPath);
         extractTextView = findViewById(R.id.text_extract);
-        extractTextView.setText(extract);
+        if (extract == R.id.radio_gaussian_ideal)
+            extractTextView.setText("Heart rate");
+        else if (extract == R.id.radio_laplacian_butterworth)
+            extractTextView.setText("Respiratory rate");
+        else {
+            extractTextView.setText("Unable to get data");
+            start.setEnabled(false);
+        }
         roiTextView = findViewById(R.id.text_roi);
         String roi = "X = " + roiX + " Y = " + roiY;
         roiTextView.setText(roi);
@@ -153,10 +160,6 @@ public class VideoEditorParameters extends AppCompatActivity {
             spatialFiltering = "Gaussian pyramid";
             temporalFiltering = "Ideal bandpass";
             hideGaussianIdealElements();
-        } else if (algorithmRadioButtonId == R.id.radio_laplacian_ideal) {
-            spatialFiltering = "Laplacian pyramid";
-            temporalFiltering = "Ideal bandpass";
-            hideLaplacianIdealButterElements();
         } else if (algorithmRadioButtonId == R.id.radio_laplacian_butterworth) {
             spatialFiltering = "Laplacian pyramid";
             temporalFiltering = "Subtraction of two butterworth low-pass filters";

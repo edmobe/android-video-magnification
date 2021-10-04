@@ -16,7 +16,6 @@ import com.example.videomagnification.application.App;
 import com.example.videomagnification.databinding.ActivityMainBinding;
 import com.example.videomagnification.magnificators.MagnificatorGdownIdeal;
 import com.example.videomagnification.magnificators.MagnificatorLpyrButter;
-import com.example.videomagnification.magnificators.MagnificatorLpyrIdeal;
 import com.example.videomagnification.threading.TaskRunner;
 
 import org.apache.commons.io.FilenameUtils;
@@ -93,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.select_an_algorithm), -1);
 
         gaussianId = R.id.radio_gaussian_ideal;
-        laplacianIdealId = R.id.radio_laplacian_ideal;
         laplacianButterId = R.id.radio_laplacian_butterworth;
         roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
         roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
@@ -101,9 +99,8 @@ public class MainActivity extends AppCompatActivity {
         taskRunner = new TaskRunner();
 
         boolean gaussianIdeal = algorithmRadioButtonId == gaussianId;
-        boolean laplacianIdeal = algorithmRadioButtonId == laplacianIdealId;
         boolean laplacianButter = algorithmRadioButtonId == laplacianButterId;
-        boolean knownAlgorithm = gaussianIdeal || laplacianIdeal || laplacianButter;
+        boolean knownAlgorithm = gaussianIdeal || laplacianButter;
 
 
         if (!knownAlgorithm) {
@@ -111,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             // TODO
         } else {
             if (gaussianIdeal) {
-                // GAUSSIAN IDEAL
+                // GAUSSIAN IDEAL (HEART RATE)
                 videoPath = "/storage/emulated/0/Pictures/video-magnification/baby2.avi";
                 taskRunner.executeAsync(new MagnificatorGdownIdeal(
                         videoPath, FilenameUtils.getPath(videoPath), 150, 6,
@@ -120,18 +117,8 @@ public class MainActivity extends AppCompatActivity {
                     this.finalState = data;
                     buttonConvert.setVisibility(View.VISIBLE);
                 });
-            } else if (laplacianIdeal) {
-                // LAPLACIAN IDEAL
-                videoPath = "/storage/emulated/0/Pictures/video-magnification/guitar.avi";
-
-                taskRunner.executeAsync(new MagnificatorLpyrIdeal(
-                        videoPath, FilenameUtils.getPath(videoPath), 50, 10,
-                        72, 92, 600, 0), (data) -> {
-                    this.finalState = data;
-                    buttonConvert.setVisibility(View.VISIBLE);
-                });
             } else {
-                // LAPLACIAN BUTTER
+                // LAPLACIAN BUTTER (RESPIRATORY RATE)
                 videoPath = "/storage/emulated/0/Pictures/video-magnification/baby.avi";
                 taskRunner.executeAsync(new MagnificatorLpyrButter(
                         videoPath, FilenameUtils.getPath(videoPath), 30, 16,
