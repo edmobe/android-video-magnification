@@ -10,12 +10,15 @@
 #include <vector>
 #include <numeric>
 #include <cmath>
+#include <algorithm>
 
 #include "jniLogs.h"
 #include "im_conv.h"
 #include "processing_functions.h"
 #include "lpyr_functions.h"
 #include "gdown_functions.h"
+#include "vector_functions.h"
+#include "PeakFinder.h"
 
 extern "C" {
 #include "ellf.h"
@@ -272,7 +275,7 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
 **/
 string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                          int level, double fl, double fh, int samplingRate,
-                                         double chromAttenuation) {
+                                         double chromAttenuation, int roiX, int roiY) {
 
     jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
     jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
@@ -432,9 +435,79 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
     updateProgress(env, 90);
 
+    // BPM extraction data
+    const int CHUNK_SIZE = 60; // Every 60 frames get a sample
+    vector<double> frequencies = linspace(0, (int) fr, CHUNK_SIZE);
+    frequencies.erase(frequencies.begin()); // remove first frequency
+    frequencies.erase(remove_if(
+            frequencies.begin(), frequencies.end(),
+            [](const int& x) {
+                return x > 10; // remove frequencies lower than 10 Hz
+            }), frequencies.end());
+    vector<float> heartRateData;
+    heartRateData.reserve(CHUNK_SIZE);
+    double bpm;
+    string bpmText = "Calculating BPM...";
+
     for (int i = startIndex; i < endIndex; i++) {
-        // Extract BPM
-        string bpmText = "BPM: 100";
+        Vec3b pixelValue = filtered_stack[i].at<Vec3b>(roiY, roiX);
+        heartRateData.push_back((float) pixelValue[2]);
+
+        // If there is enough BPM data
+        if (i >= CHUNK_SIZE) {
+            // COMPUTE PEAK FINDING ALGORITHM
+//            ld threshold = 5.0;
+//            ld influence = 0.0;
+//            unordered_map<string, vector<ld>> output1 =
+//                    z_score_thresholding(heartRateData, 10, threshold, influence);
+//            unordered_map<string, vector<ld>> output2 =
+//                    z_score_thresholding(heartRateData, 20, threshold, influence);
+//            unordered_map<string, vector<ld>> output3 =
+//                    z_score_thresholding(heartRateData, 30, threshold, influence);
+//            int bpm2 = 20;
+//            vector <int> peaks;
+//            PeakFinder::findPeaks(heartRateData, peaks, false);
+//            double dist = 0;
+//            int count = 0;
+//            for (int i = 1; i < peaks.size(); i++) {
+//                dist += peaks[i] - peaks[i - 1];
+//                count++;
+//            }
+//            dist = dist / count;
+//            double bpm2 = fr * 60 / dist;
+
+            // COMPUTE DFT
+            vector<float> heartRateSignalVector;
+            heartRateSignalVector = heartRateData;
+            Mat heartRateSignal = Mat(heartRateSignalVector);
+            Mat planes[] =
+                    {Mat_<float>(heartRateSignal), Mat::zeros(heartRateSignal.size(), CV_32F)};
+            Mat complexI;
+            merge(planes, 2, complexI); // Add to the expanded another plane with zeros
+            dft(complexI, complexI); // this way the result may fit in the source matrix
+            // Compute the magnitude and switch to logarithmic scale
+            // => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
+            split(complexI, planes); // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
+            magnitude(planes[0], planes[1], planes[0]); // planes[0] = magnitude
+            Mat magI = planes[0];
+            vector<float> filteredMagI =
+                    magI.isContinuous() ? magI : magI.clone();
+
+            // FILTER THE DFT
+            filteredMagI.erase(filteredMagI.begin()); // remove first result
+            filteredMagI = {filteredMagI.begin(),
+                            filteredMagI.end() - (filteredMagI.size() - frequencies.size())};
+
+
+            // GET THE HEART RATE FREQUENCY
+            int maxElementIndex =
+                    max_element(filteredMagI.begin(), filteredMagI.end()) - filteredMagI.begin();
+            bpm = 60 * frequencies.at(1 + maxElementIndex);
+            bpmText = "BPM: " + to_string(bpm);
+
+            // UPDATE THE HEART RATE DATA
+            heartRateData.erase(heartRateData.begin());
+        }
 
         putText(filtered_stack[i], bpmText, Point(32, 32),
                 FONT_HERSHEY_COMPLEX_SMALL, 0.8,

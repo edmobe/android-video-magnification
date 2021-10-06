@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 taskRunner.executeAsync(new MagnificatorGdownIdeal(
                         videoPath, FilenameUtils.getPath(videoPath), 150, 6,
                         (double) 14 / (double) 6, (double) 16 / (double) 6, 30,
-                        1), (data) -> {
+                        1, 294, 170), (data) -> {
                     this.finalState = data;
                     buttonConvert.setVisibility(View.VISIBLE);
                 });

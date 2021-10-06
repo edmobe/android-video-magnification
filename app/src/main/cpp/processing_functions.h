@@ -13,7 +13,7 @@ Video processing functions
 
 string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                          int level, double f1, double fh, int samplingRate,
-                                         double chromAttenuation);
+                                         double chromAttenuation, int roiX, int roiY);
 
 string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
                                         double lambda_c, double fl, double fh, double samplingRate,

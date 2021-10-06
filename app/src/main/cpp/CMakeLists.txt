@@ -36,6 +36,8 @@ add_library( # Sets the name of the library.
             const.c
             mtherr.c
             im_conv.cpp
+            vector_functions.cpp
+            PeakFinder.cpp
             lpyr_functions.cpp
             gdown_functions.cpp
             processing_functions.cpp

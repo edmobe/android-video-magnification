@@ -16,11 +16,13 @@ public class MagnificatorGdownIdeal implements Callable<String>{
     double fh;
     double samplingRate;
     double chromAttenuation;
+    int roiX;
+    int roiY;
 
     public MagnificatorGdownIdeal(String videoIn, String outDir,
                                   double alpha, int level,
                                   double fl, double fh, double samplingRate,
-                                  double chromAttenuation) {
+                                  double chromAttenuation, int roiX, int roiY) {
         this.handler = new Handler(Looper.getMainLooper());
         this.videoIn = videoIn;
         this.outDir = outDir;
@@ -30,17 +32,21 @@ public class MagnificatorGdownIdeal implements Callable<String>{
         this.fh = fh;
         this.samplingRate = samplingRate;
         this.chromAttenuation = chromAttenuation;
+        this.roiX = roiX;
+        this.roiY = roiY;
     }
 
     public native String amplify_spatial_gdown_temporal_ideal(String videoIn, String outDir,
                                                               double alpha, int level,
-                                                              double fl, double fh, double samplingRate,
-                                                              double chromAttenuation);
+                                                              double fl, double fh,
+                                                              double samplingRate,
+                                                              double chromAttenuation,
+                                                              int roiX, int roiY);
 
     @Override
     public String call() {
         return amplify_spatial_gdown_temporal_ideal(
-                videoIn, outDir, alpha, level, fl, fh, samplingRate, chromAttenuation);
+                videoIn, outDir, alpha, level, fl, fh, samplingRate, chromAttenuation, roiX, roiY);
     }
 }
 
