@@ -56,7 +56,6 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
                                         double chromAttenuation) {
 
     jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
-    jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -117,12 +116,6 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
     logDebug("Video reception - Video info (FPS)", to_string(fr));
     logDebug("Video reception - Maximum pyramid height", to_string(max_ht));
 
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Video reception - Interrupted", "Process stopped");
-        video.release();
-        return "error";
-    }
-
     updateProgress(env, 5);
 
     /*
@@ -130,13 +123,6 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
      * */
 
     vector<vector<Mat>> pyr_stack = build_Lpyr_stack(env, inFile, startIndex, endIndex);
-
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Spatial processing - Stopped", "Thread is canceled");
-        updateProgress(env, 0);
-        video.release();
-        return "error";
-    }
 
     updateProgress(env, 15);
     logDebug("Spatial processing - LPYR stack", "Finished building!");
@@ -146,13 +132,6 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
      * */
     vector<vector<Mat>> filteredStack = ideal_bandpassing_lpyr(env, pyr_stack, 3, fl, fh,
                                                                samplingRate);
-
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Video processing - Stopped", "Thread is canceled");
-        updateProgress(env, 0);
-        video.release();
-        return "error";
-    }
 
     updateProgress(env, 70);
     logDebugAndShowUser(env, "Video output",
@@ -278,7 +257,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
                                          double chromAttenuation, int roiX, int roiY) {
 
     jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
-    jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -339,12 +317,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     logDebug("Video reception - Video info (Width)", to_string(vidWidth));
     logDebug("Video reception - Video info (FPS)", to_string(fr));
 
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Video reception - Stopped", "Thread is canceled");
-        video.release();
-        return "error";
-    }
-
     updateProgress(env, 5);
 
     /*
@@ -352,13 +324,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
      * */
 
     vector<Mat> Gdown_stack = build_GDown_stack(env, inFile, startIndex, endIndex, level);
-
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Spatial processing - Stopped", "Thread is canceled");
-        updateProgress(env, 0);
-        video.release();
-        return "error";
-    }
 
     updateProgress(env, 15);
     logDebug("Spatial processing - GDown stack", "Finished building!");
@@ -368,13 +333,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
      * */
 
     vector<Mat> filtered_stack = ideal_bandpassing(Gdown_stack, 1, fl, fh, samplingRate);
-
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Video processing - Stopped", "Thread is canceled");
-        updateProgress(env, 0);
-        video.release();
-        return "error";
-    }
 
     updateProgress(env, 70);
 
@@ -435,78 +393,66 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
     updateProgress(env, 90);
 
-    // BPM extraction data
-    const int CHUNK_SIZE = 60; // Every 60 frames get a sample
-    vector<double> frequencies = linspace(0, (int) fr, CHUNK_SIZE);
-    frequencies.erase(frequencies.begin()); // remove first frequency
-    frequencies.erase(remove_if(
-            frequencies.begin(), frequencies.end(),
-            [](const int& x) {
-                return x > 10; // remove frequencies lower than 10 Hz
-            }), frequencies.end());
-    vector<float> heartRateData;
-    heartRateData.reserve(CHUNK_SIZE);
-    double bpm;
+    // BPM EXTRACTION DATA
+    const int CHUNK_SIZE = 90; // Every 90 frames get a sample
+    const int lag = 10;
+    const ld threshold = 1.0;
+    const ld influence = 0.9;
+    vector<ld> heartRateData;
+    heartRateData.reserve(endIndex);
     string bpmText = "Calculating BPM...";
 
     for (int i = startIndex; i < endIndex; i++) {
-        Vec3b pixelValue = filtered_stack[i].at<Vec3b>(roiY, roiX);
-        heartRateData.push_back((float) pixelValue[2]);
+        Mat croppedFrame = cropFrame(filtered_stack[i], roiX, roiY);
+        ld predominantColor = getPredominantRedColor(croppedFrame);
+        heartRateData.push_back(predominantColor);
+    }
 
-        // If there is enough BPM data
-        if (i >= CHUNK_SIZE) {
-            // COMPUTE PEAK FINDING ALGORITHM
-//            ld threshold = 5.0;
-//            ld influence = 0.0;
-//            unordered_map<string, vector<ld>> output1 =
-//                    z_score_thresholding(heartRateData, 10, threshold, influence);
-//            unordered_map<string, vector<ld>> output2 =
-//                    z_score_thresholding(heartRateData, 20, threshold, influence);
-//            unordered_map<string, vector<ld>> output3 =
-//                    z_score_thresholding(heartRateData, 30, threshold, influence);
-//            int bpm2 = 20;
-//            vector <int> peaks;
-//            PeakFinder::findPeaks(heartRateData, peaks, false);
-//            double dist = 0;
-//            int count = 0;
-//            for (int i = 1; i < peaks.size(); i++) {
-//                dist += peaks[i] - peaks[i - 1];
-//                count++;
-//            }
-//            dist = dist / count;
-//            double bpm2 = fr * 60 / dist;
+    // COMPUTE PEAK FINDING ALGORITHM
+    unordered_map<string, vector<ld>> peakFindingOutput =
+            z_score_thresholding(heartRateData, lag, threshold, influence);
+    vector<ld> signals = peakFindingOutput["signals"];
+    vector<int> peakIndexes = {};
+    vector<int> chunkIndexes = {};
+    vector<double> bpmVector = {};
 
-            // COMPUTE DFT
-            vector<float> heartRateSignalVector;
-            heartRateSignalVector = heartRateData;
-            Mat heartRateSignal = Mat(heartRateSignalVector);
-            Mat planes[] =
-                    {Mat_<float>(heartRateSignal), Mat::zeros(heartRateSignal.size(), CV_32F)};
-            Mat complexI;
-            merge(planes, 2, complexI); // Add to the expanded another plane with zeros
-            dft(complexI, complexI); // this way the result may fit in the source matrix
-            // Compute the magnitude and switch to logarithmic scale
-            // => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
-            split(complexI, planes); // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
-            magnitude(planes[0], planes[1], planes[0]); // planes[0] = magnitude
-            Mat magI = planes[0];
-            vector<float> filteredMagI =
-                    magI.isContinuous() ? magI : magI.clone();
+    // First frame
+    printIndicator(filtered_stack[0], vidWidth, true);
 
-            // FILTER THE DFT
-            filteredMagI.erase(filteredMagI.begin()); // remove first result
-            filteredMagI = {filteredMagI.begin(),
-                            filteredMagI.end() - (filteredMagI.size() - frequencies.size())};
+    // Given N chunks in peakIndexes = [ CHUNK 1 | CHUNK 2 | ... | CHUNK N]
+    for (int i = 1; i < signals.size(); i++) {
+        // Finished chunk
+        if (i % CHUNK_SIZE == 0) {
+            double diff = 0;
+            int diffCount = 0;
+            // Get chunk differences
+            for (int j = 1; j < chunkIndexes.size(); j++) {
+                diff += chunkIndexes[j] - chunkIndexes[j - 1];
+                diffCount++;
+            }
+            bpmVector.push_back(fr * 60 * diffCount / diff);
+            chunkIndexes.empty();
+        }
 
+        // Positive edge found
+        if ((signals[i - 1] == 0 || signals[i - 1] == -1) && signals[i] == 1) {
+            peakIndexes.push_back(i);
+            chunkIndexes.push_back(i);
+            // Print heart rate indicator for 5 frames
+            for (int j = i; j < i + 5; j++) {
+                printIndicator(filtered_stack[j], vidWidth, false);
+            }
+        } else {
+            printIndicator(filtered_stack[i], vidWidth, true);
+        }
 
-            // GET THE HEART RATE FREQUENCY
-            int maxElementIndex =
-                    max_element(filteredMagI.begin(), filteredMagI.end()) - filteredMagI.begin();
-            bpm = 60 * frequencies.at(1 + maxElementIndex);
-            bpmText = "BPM: " + to_string(bpm);
+    }
 
-            // UPDATE THE HEART RATE DATA
-            heartRateData.erase(heartRateData.begin());
+    for (int i = startIndex; i < endIndex; i++) {
+        // Print BPM every 90 frames
+        if (i % CHUNK_SIZE == 0) {
+            bpmText = "BPM: " + to_string(bpmVector[0]);
+            bpmVector.erase(bpmVector.begin());
         }
 
         putText(filtered_stack[i], bpmText, Point(32, 32),
@@ -558,7 +504,6 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                                          double chromAttenuation) {
 
     jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
-    jmethodID methodId = env->GetStaticMethodID(clazz, "isShutdown", "()Z");
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -634,12 +579,6 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     logDebug("Video reception - Video info (Width)", to_string(vidWidth));
     logDebug("Video reception - Video info (FPS)", to_string(fr));
 
-    if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-        logDebug("Video reception - Stopped", "Thread is canceled");
-        video.release();
-        return "error";
-    }
-
     updateProgress(env, 5);
 
     // Write video
@@ -682,17 +621,6 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     float progress = 0;
 
     for (int i = startIndex; i < endIndex - 1; i++) {
-
-        // Validate if thread stopped every 10 frames
-        if(i % 10 == 0) {
-            if ((bool) env->CallStaticBooleanMethod(clazz, methodId)) {
-                logDebug("Video processing - Stopped", "Thread is canceled");
-                updateProgress(env, 0);
-                video.release();
-                videoOut.release();
-                return "error";
-            }
-        }
 
         progress = (float) i / (float) endIndex;
 

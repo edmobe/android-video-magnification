@@ -276,3 +276,30 @@ vector<Mat> ideal_bandpassing(vector<Mat> input, int dim, double wl, double wh, 
 
     return input;
 }
+
+Mat cropFrame(Mat frame, int roiX, int roiY) {
+    if (roiX >= 50)
+        roiX -= 50;
+    if (roiY >= 50)
+        roiY -= 50;
+    // Setup a rectangle to define your region of interest
+    cv::Rect myRoi(roiX, roiY, 100, 100);
+    return frame(myRoi);
+}
+
+long double getPredominantRedColor(Mat frame) {
+    Scalar tempVal = mean(frame);
+    return tempVal.val[2];
+}
+
+void printIndicator(Mat &frame, int vidWidth, bool redColor) {
+    Scalar color;
+    if (redColor) {
+        color = Scalar( 0, 0, 255 );
+    } else {
+        Scalar( 0, 0, 0 );
+    }
+
+    circle(frame, Point( vidWidth - 30,  30),
+            20, color, FILLED, FILLED);
+}

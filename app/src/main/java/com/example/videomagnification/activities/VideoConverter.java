@@ -2,6 +2,7 @@ package com.example.videomagnification.activities;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -21,22 +22,88 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 
-import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Observer;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-
 
 public class VideoConverter extends AppCompatActivity {
 
     private static final String outputDir = "/video-magnification/";
     private String fileDir;
+    String inputFileName;
     private Uri inputVideoUri;
     private String midVideoPath;
     private Uri outputVideoUri;
     private ProgressBar progressBar;
     private TextView textConversionInfo;
+    private int conversionType;
+
+    private class ConversionTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            // TODO: ERROR HANDLING
+            try {
+                createDirectoryIfNeeded();
+                progressBar.setProgress(20);
+                if (conversionType == 0)
+                    midVideoPath = convertMp4ToMjpeg(inputVideoUri);
+                else
+                    midVideoPath = convertAviToMjpeg(inputFileName);
+                progressBar.setProgress(60);
+                ((App) getApplication()).logDebug(
+                        "Converting - Mid video path", midVideoPath);
+                if (conversionType == 0)
+                    outputVideoUri = convertMjpegToAvi(midVideoPath);
+                else
+                    outputVideoUri = convertMjpegToMp4(midVideoPath);
+                ((App) getApplication()).logDebug(
+                        "Converting - Output video path",
+                        outputVideoUri.getPath());
+                progressBar.setProgress(100);
+                return "success";
+            } catch (Exception e) {
+                return "error";
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            // TODO: ERROR HANDLING
+            super.onPostExecute(result);
+            if (!result.equals("error")) {
+                ((App) getApplication()).logDebug("Observable", "Completed!");
+                if (conversionType == 0) {
+                    // Get a handler that can be used to post to the main thread
+                    Handler mainHandler = new Handler(VideoConverter.this.getMainLooper());
+
+                    Runnable myRunnable = () -> {
+                        Intent roiActivity = new Intent(getApplicationContext(),
+                                RegionOfInterest.class);
+                        roiActivity.putExtra(getString(R.string.video_file_path),
+                                outputVideoUri.toString());
+                        roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
+                                inputVideoUri.toString());
+                        startActivity(roiActivity);
+                    };
+
+                    mainHandler.post(myRunnable);
+
+                } else if (conversionType == 1) {
+                    // Get a handler that can be used to post to the main thread
+                    Handler mainHandler = new Handler(VideoConverter.this.getMainLooper());
+
+                    Runnable myRunnable = () -> {
+                        progressBar.setVisibility(View.GONE);
+                        textConversionInfo.setText("Successfully converted video to MP4");
+                    };
+
+                    mainHandler.post(myRunnable);
+
+                } else {
+                    // TODO
+                }
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,9 +111,9 @@ public class VideoConverter extends AppCompatActivity {
         setContentView(R.layout.activity_video_converter);
 
         Intent intent = getIntent(); // gets the previously created intent
-        String inputFileName = intent.getStringExtra(getString(R.string.video_file_path));
+        inputFileName = intent.getStringExtra(getString(R.string.video_file_path));
         // 0: input, 1: output, -1: error
-        int conversionType = intent.getIntExtra(getString(R.string.conversion_type), -1);
+        conversionType = intent.getIntExtra(getString(R.string.conversion_type), -1);
 
         progressBar = findViewById(R.id.progress_convert);
         textConversionInfo = findViewById(R.id.text_conversion_info);
@@ -61,97 +128,8 @@ public class VideoConverter extends AppCompatActivity {
             // TODO
         }
 
-        Observable<Integer> observable = Observable.create(emitter -> {
-            emitter.onNext(1);
-            emitter.onNext(2);
-            emitter.onNext(3);
-            emitter.onComplete();
-        });
+        new ConversionTask().execute();
 
-        observable
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(new Observer<Integer>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) { }
-
-                    @Override
-                    public void onNext(@NonNull Integer integer) {
-                        // TODO: Error handling
-                        ((App) getApplication()).logDebug("Observable", integer.toString());
-                        switch (integer) {
-                            case 1: {
-                                createDirectoryIfNeeded();
-                                progressBar.setProgress(20);
-                                break;
-                            }
-                            case 2: {
-                                if (conversionType == 0)
-                                    midVideoPath = convertMp4ToMjpeg(inputVideoUri);
-                                else
-                                    midVideoPath = convertAviToMjpeg(inputFileName);
-                                progressBar.setProgress(60);
-                                ((App) getApplication()).logDebug(
-                                        "Converting - Mid video path", midVideoPath);
-                                break;
-                            }
-                            case 3: {
-                                if (conversionType == 0)
-                                    outputVideoUri = convertMjpegToAvi(midVideoPath);
-                                else
-                                    outputVideoUri = convertMjpegToMp4(midVideoPath);
-                                ((App) getApplication()).logDebug(
-                                        "Converting - Output video path",
-                                        outputVideoUri.getPath());
-                                progressBar.setProgress(100);
-                                break;
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        App.displayShortToast(
-                                "Error while converting the video!"
-                        );
-                        ((App) getApplication()).logError("Converting video",
-                                e.getLocalizedMessage());
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        ((App) getApplication()).logDebug("Observable", "Completed!");
-                        if (conversionType == 0) {
-                            // Get a handler that can be used to post to the main thread
-                            Handler mainHandler = new Handler(VideoConverter.this.getMainLooper());
-
-                            Runnable myRunnable = () -> {
-                                Intent roiActivity = new Intent(getApplicationContext(),
-                                        RegionOfInterest.class);
-                                roiActivity.putExtra(getString(R.string.video_file_path),
-                                        outputVideoUri.toString());
-                                roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
-                                        inputVideoUri.toString());
-                                startActivity(roiActivity);
-                            };
-
-                            mainHandler.post(myRunnable);
-
-                        } else if (conversionType == 1) {
-                            // Get a handler that can be used to post to the main thread
-                            Handler mainHandler = new Handler(VideoConverter.this.getMainLooper());
-
-                            Runnable myRunnable = () -> {
-                                progressBar.setVisibility(View.GONE);
-                                textConversionInfo.setText("Successfully converted video to MP4");
-                            };
-
-                            mainHandler.post(myRunnable);
-
-                        } else {
-                            // TODO
-                        }
-                    }
-                });
     }
 
     private boolean createDirectoryIfNeeded() {
@@ -222,7 +200,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = fileDir + inputBaseName + ".avi";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mjpeg " + outputVideoPath);
+                "-y -i " + inputVideoPath+ " -q:v 2 -r 30 -vcodec mjpeg " + outputVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
         ((App)getApplication()).logDebug(

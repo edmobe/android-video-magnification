@@ -1,16 +1,7 @@
 package com.example.videomagnification.magnificators;
 
-import android.os.Handler;
-import android.os.Looper;
+public class MagnificatorLpyrButter extends Magnificator {
 
-import java.util.concurrent.Callable;
-
-public class MagnificatorLpyrButter  implements Callable<String> {
-
-    Handler handler;
-    String videoIn;
-    String outDir;
-    double alpha;
     double lambdaC;
     double fl;
     double fh;
@@ -20,8 +11,7 @@ public class MagnificatorLpyrButter  implements Callable<String> {
     public MagnificatorLpyrButter(String videoIn, String outDir,
                                  double alpha, double lambdaC,
                                  double fl, double fh, double samplingRate,
-                                 double chromAttenuation) {
-        this.handler = new Handler(Looper.getMainLooper());
+                                 double chromAttenuation, int roiX, int roiY) {
         this.videoIn = videoIn;
         this.outDir = outDir;
         this.alpha = alpha;
@@ -30,6 +20,8 @@ public class MagnificatorLpyrButter  implements Callable<String> {
         this.fh = fh;
         this.samplingRate = samplingRate;
         this.chromAttenuation = chromAttenuation;
+        this.roiX = roiX;
+        this.roiY = roiY;
     }
 
     public native String amplify_spatial_lpry_temporal_butter(String videoIn, String outDir,

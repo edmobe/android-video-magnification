@@ -1,6 +1,7 @@
 package com.example.videomagnification.activities;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,11 +13,10 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
-import com.example.videomagnification.application.App;
 import com.example.videomagnification.databinding.ActivityMainBinding;
+import com.example.videomagnification.magnificators.Magnificator;
 import com.example.videomagnification.magnificators.MagnificatorGdownIdeal;
 import com.example.videomagnification.magnificators.MagnificatorLpyrButter;
-import com.example.videomagnification.threading.TaskRunner;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -50,8 +50,49 @@ public class MainActivity extends AppCompatActivity {
     private int gaussianId;
     private int laplacianIdealId;
     private int laplacianButterId;
-    
-    private TaskRunner taskRunner;
+
+    private class MagnificationTask extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            // TODO: ERROR HANDLING
+            try {
+                Magnificator magnificator;
+                String result = "error";
+                int algorithmId = Integer.parseInt(params[0]);
+                if (algorithmId == R.id.radio_gaussian_ideal) {
+                    magnificator = new MagnificatorGdownIdeal(
+                            "/storage/emulated/0/Pictures/video-magnification/baby2.avi",
+                            FilenameUtils.getPath(videoPath), 150, 6,
+                            (double) 14 / (double) 6, (double) 16 / (double) 6,
+                            30, 1, 294, 170);
+                    result = magnificator.call();
+                } else if (algorithmId == R.id.radio_laplacian_butterworth) {
+                    magnificator = new MagnificatorLpyrButter(
+                            videoPath, FilenameUtils.getPath(videoPath), 30, 16,
+                            0.4, 3, 30, 0.1, 0, 0);
+                    result = magnificator.call();
+                } else {
+                    // Unknown algorithm
+
+                }
+                return result;
+
+            } catch (Exception e) {
+                return "error";
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            if(!result.equals("error")) {
+                buttonConvert.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,38 +137,8 @@ public class MainActivity extends AppCompatActivity {
         roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
         roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
 
-        taskRunner = new TaskRunner();
+        new MagnificationTask().execute(String.valueOf(algorithmRadioButtonId));
 
-        boolean gaussianIdeal = algorithmRadioButtonId == gaussianId;
-        boolean laplacianButter = algorithmRadioButtonId == laplacianButterId;
-        boolean knownAlgorithm = gaussianIdeal || laplacianButter;
-
-
-        if (!knownAlgorithm) {
-            // UNKNOWN ALGORITHM
-            // TODO
-        } else {
-            if (gaussianIdeal) {
-                // GAUSSIAN IDEAL (HEART RATE)
-                videoPath = "/storage/emulated/0/Pictures/video-magnification/baby2.avi";
-                taskRunner.executeAsync(new MagnificatorGdownIdeal(
-                        videoPath, FilenameUtils.getPath(videoPath), 150, 6,
-                        (double) 14 / (double) 6, (double) 16 / (double) 6, 30,
-                        1, 294, 170), (data) -> {
-                    this.finalState = data;
-                    buttonConvert.setVisibility(View.VISIBLE);
-                });
-            } else {
-                // LAPLACIAN BUTTER (RESPIRATORY RATE)
-                videoPath = "/storage/emulated/0/Pictures/video-magnification/baby.avi";
-                taskRunner.executeAsync(new MagnificatorLpyrButter(
-                        videoPath, FilenameUtils.getPath(videoPath), 30, 16,
-                        0.4, 3, 30, 0.1), (data) -> {
-                    this.finalState = data;
-                    buttonConvert.setVisibility(View.VISIBLE);
-                });
-            }
-        }
     }
 
     public static void updateMagnifierLog(String string) {
@@ -144,16 +155,5 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.progress.setProgress(progress);
             }
         });
-    }
-
-    public static boolean isShutdown() {
-        return App.getExecutorService().isShutdown();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ((App) getApplication()).logDebug("Video magnification", "Stopping threads...");
-        App.getExecutorService().shutdownNow();
     }
 }
