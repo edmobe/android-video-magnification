@@ -62,10 +62,10 @@ public class MainActivity extends AppCompatActivity {
                 int algorithmId = Integer.parseInt(params[0]);
                 if (algorithmId == R.id.radio_gaussian_ideal) {
                     magnificator = new MagnificatorGdownIdeal(
-                            "/storage/emulated/0/Pictures/video-magnification/baby2.avi",
-                            FilenameUtils.getPath(videoPath), 150, 6,
-                            (double) 14 / (double) 6, (double) 16 / (double) 6,
-                            30, 1, 294, 170);
+                            "/storage/emulated/0/Pictures/video-magnification/face2.avi",
+                            FilenameUtils.getPath(videoPath), 250, 6,
+                            (double) 1, (double) 10 / (double) 6,
+                            30, 1, 966, 338);
                     result = magnificator.call();
                 } else if (algorithmId == R.id.radio_laplacian_butterworth) {
                     magnificator = new MagnificatorLpyrButter(

@@ -440,7 +440,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
             chunkIndexes.push_back(i);
             // Print heart rate indicator for 5 frames
             for (int j = i; j < i + 5; j++) {
-                printIndicator(filtered_stack[j], vidWidth, false);
+                if (j <= signals.size())
+                    printIndicator(filtered_stack[j - 1], vidWidth, false);
             }
         } else {
             printIndicator(filtered_stack[i], vidWidth, true);
