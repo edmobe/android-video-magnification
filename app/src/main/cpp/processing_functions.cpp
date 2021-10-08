@@ -452,8 +452,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     for (int i = startIndex; i < endIndex; i++) {
         // Print BPM every 90 frames
         if (i % CHUNK_SIZE == 0) {
-            bpmText = "BPM: " + to_string(bpmVector[0]);
-            bpmVector.erase(bpmVector.begin());
+            int index = i / CHUNK_SIZE;
+            bpmText = "BPM: " + to_string(bpmVector[index]);
         }
 
         putText(filtered_stack[i], bpmText, Point(32, 32),

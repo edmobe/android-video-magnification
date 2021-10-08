@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
+import com.example.videomagnification.application.AccurateSeekBar;
 
 public class VideoEditorParameters extends AppCompatActivity {
 
@@ -27,17 +28,17 @@ public class VideoEditorParameters extends AppCompatActivity {
     private TextView roiTextView;
     private int algorithmRadioButtonId;
 
-    SeekBar[] integerSeeks;
-    SeekBar[] floatSeeks;
-    private SeekBar seekAlpha;
-    private SeekBar seekLambda;
-    private SeekBar seekLevel;
-    private SeekBar seekFl;
-    private SeekBar seekFh;
-    private SeekBar seekSampling;
-    private SeekBar seekChromAtt;
-    private SeekBar seekR1;
-    private SeekBar seekR2;
+    AccurateSeekBar[] integerSeeks;
+    AccurateSeekBar[] floatSeeks;
+    private AccurateSeekBar seekAlpha;
+    private AccurateSeekBar seekLambda;
+    private AccurateSeekBar seekLevel;
+    private AccurateSeekBar seekFl;
+    private AccurateSeekBar seekFh;
+    private AccurateSeekBar seekSampling;
+    private AccurateSeekBar seekChromAtt;
+    private AccurateSeekBar seekR1;
+    private AccurateSeekBar seekR2;
 
     TextView[] integerTextViews;
     TextView[] floatTextViews;
@@ -69,7 +70,7 @@ public class VideoEditorParameters extends AppCompatActivity {
         seekFl = findViewById(R.id.seek_fl);
         seekFh = findViewById(R.id.seek_fh);
         seekSampling = findViewById(R.id.seek_sampling);
-        seekChromAtt = findViewById(R.id.seek_chrom_att);
+        seekChromAtt = (AccurateSeekBar) findViewById(R.id.seek_chrom_att);
         seekR1 = findViewById(R.id.seek_r1);
         seekR2 = findViewById(R.id.seek_r2);
 
@@ -110,8 +111,8 @@ public class VideoEditorParameters extends AppCompatActivity {
         roiTextView.setText(roi);
 
         // Arrays
-        integerSeeks = new SeekBar[]{seekAlpha, seekLambda, seekLevel};
-        floatSeeks = new SeekBar[]{seekSampling, seekChromAtt, seekR1, seekR2};
+        integerSeeks = new AccurateSeekBar[]{seekAlpha, seekLambda, seekLevel};
+        floatSeeks = new AccurateSeekBar[]{seekSampling, seekChromAtt, seekR1, seekR2};
         integerTextViews = new TextView[]{textAlpha, textLambda, textLevel};
         floatTextViews = new TextView[]{textSampling, textChromAtt, textR1, textR2};
     }

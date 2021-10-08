@@ -61,11 +61,14 @@ public class MainActivity extends AppCompatActivity {
                 String result = "error";
                 int algorithmId = Integer.parseInt(params[0]);
                 if (algorithmId == R.id.radio_gaussian_ideal) {
+                    // Baby: 150, 6, 2.33, 2.66, 30, 1, 294, 170
+                    // Face 2: 250, 6, 1, 1.66, 30, 1, 966, 338
                     magnificator = new MagnificatorGdownIdeal(
-                            "/storage/emulated/0/Pictures/video-magnification/face2.avi",
-                            FilenameUtils.getPath(videoPath), 250, 6,
-                            (double) 1, (double) 10 / (double) 6,
-                            30, 1, 966, 338);
+                            videoPath, FilenameUtils.getPath(videoPath), 150, 6, 2.33, 2.66,
+                            30, 1, 294, 170);
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), alpha, level, fl, fh,
+//                            sampling, chromAtt, roiX, roiY);
                     result = magnificator.call();
                 } else if (algorithmId == R.id.radio_laplacian_butterworth) {
                     magnificator = new MagnificatorLpyrButter(
@@ -88,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             if(!result.equals("error")) {
+                finalState = result;
                 buttonConvert.setVisibility(View.VISIBLE);
             }
         }
