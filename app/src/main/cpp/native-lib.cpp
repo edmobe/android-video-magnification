@@ -58,7 +58,7 @@ JNIEXPORT jstring JNICALL
 Java_com_example_videomagnification_magnificators_MagnificatorLpyrButter_amplify_1spatial_1lpry_1temporal_1butter(
         JNIEnv *env, jobject thiz, jstring video_in, jstring out_dir, jdouble alpha,
         jdouble lambda_c, jdouble fl, jdouble fh, jdouble sampling_rate,
-        jdouble chrom_attenuation) {
+        jdouble chrom_attenuation, jint roiX, jint roiY) {
 
     const char *videoInCharArr = env->GetStringUTFChars(video_in, 0);
     std::string inFile = std::string(videoInCharArr);
@@ -68,7 +68,8 @@ Java_com_example_videomagnification_magnificators_MagnificatorLpyrButter_amplify
     logDebug("Video reception - Input file", inFile);
 
     string output = amplify_spatial_lpyr_temporal_butter(env, inFile, outDir, alpha, lambda_c,
-                                                         fl, fh, sampling_rate, chrom_attenuation);
+                                                         fl, fh, sampling_rate, chrom_attenuation,
+                                                         roiX, roiY);
 
     return env->NewStringUTF(output.c_str());
 

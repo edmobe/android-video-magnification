@@ -61,22 +61,23 @@ public class MainActivity extends AppCompatActivity {
                 String result = "error";
                 int algorithmId = Integer.parseInt(params[0]);
                 if (algorithmId == R.id.radio_gaussian_ideal) {
-                    // Baby: 150, 6, 2.33, 2.66, 30, 1, 294, 170
-                    // Face 2: 250, 6, 1, 1.66, 30, 1, 966, 338
-                    magnificator = new MagnificatorGdownIdeal(
-                            videoPath, FilenameUtils.getPath(videoPath), 100, 6, 1, 1.66,
-                            30, 1, roiX, roiY);
+                    // Baby 2: 150, 6, 2.33, 2.66, 30, 1, 294, 170
+                    // Face 2: 150, 6, 1, 1.66, 30, 1, 294, 170
+                    // Baby: 30, 16, 0.4, 3, 30, 0.1
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 100, 6, 1, 1.66,
+//                            30, 1, roiX, roiY);
 //                    magnificator = new MagnificatorGdownIdeal(
 //                            videoPath, FilenameUtils.getPath(videoPath), 150, 6, 2.33, 2.66,
 //                            30, 1, 294, 170);
-//                    magnificator = new MagnificatorGdownIdeal(
-//                            videoPath, FilenameUtils.getPath(videoPath), alpha, level, fl, fh,
-//                            sampling, chromAtt, roiX, roiY);
+                    magnificator = new MagnificatorGdownIdeal(
+                            videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+                            1, 1.66, 30, 1, roiX, roiY);
                     result = magnificator.call();
                 } else if (algorithmId == R.id.radio_laplacian_butterworth) {
                     magnificator = new MagnificatorLpyrButter(
                             videoPath, FilenameUtils.getPath(videoPath), 30, 16,
-                            0.4, 3, 30, 0.1, 0, 0);
+                            0.4, 3, 30, 0.1, roiX, roiY);
                     result = magnificator.call();
                 } else {
                     // Unknown algorithm

@@ -502,7 +502,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 **/
 string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string outDir, double alpha,
                                          double lambda_c, double fl, double fh, int samplingRate,
-                                         double chromAttenuation) {
+                                         double chromAttenuation, int roiX, int roiY) {
 
     jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
 
@@ -526,9 +526,9 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
      * ================= VIDEO RECEPTION =================
      * */
 
-    logDebugAndShowUser(env, "Video reception", "Extracting video data");
+    logDebugAndShowUser(env, "Video reception", "Extracting videoIn data");
 
-    // Out video preparation
+    // Out videoIn preparation
     string name;
     string delimiter = "/";
 
@@ -541,31 +541,34 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     name = name.substr(0, name.find("."));
     cout << name << endl;
 
-    // Creates the result video name
+    // Creates the result videoIn name
+    string midName = outDir + name + "-butter-from-" + to_string(fl) + "-to-" +
+                     to_string(fh) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
+                     "-chromAtn-" + to_string(chromAttenuation) + "-tmp" ".avi";
     string outName = outDir + name + "-butter-from-" + to_string(fl) + "-to-" +
                      to_string(fh) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
                      "-chromAtn-" + to_string(chromAttenuation) + ".avi";
 
     logDebug("Video reception - Output file", outName);
 
-    // Read video
+    // Read videoIn
     // Create a VideoCapture object and open the input file
-    // If the input is the web camera, pass 0 instead of the video file name
-    VideoCapture video(inFile);
+    // If the input is the web camera, pass 0 instead of the videoIn file name
+    VideoCapture videoIn(inFile);
 
     // Check if camera opened successfully
-    if (!video.isOpened()) {
-        logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
+    if (!videoIn.isOpened()) {
+        logDebugAndShowUser(env, "Video reception", "Error opening videoIn stream or file");
         updateProgress(env, 100);
         return "error";
     }
 
-    // Extracting video info
-    int vidHeight = (int)video.get(CAP_PROP_FRAME_HEIGHT);
-    int vidWidth = (int)video.get(CAP_PROP_FRAME_WIDTH);
+    // Extracting videoIn info
+    int vidHeight = (int)videoIn.get(CAP_PROP_FRAME_HEIGHT);
+    int vidWidth = (int)videoIn.get(CAP_PROP_FRAME_WIDTH);
     int nChannels = 3;
-    int fr = (int)video.get(CAP_PROP_FPS);
-    int len = (int)video.get(CAP_PROP_FRAME_COUNT);
+    int fr = (int)videoIn.get(CAP_PROP_FPS);
+    int len = (int)videoIn.get(CAP_PROP_FRAME_COUNT);
     int startIndex = 0;
     int endIndex = len - 10;
 
@@ -582,10 +585,10 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
     updateProgress(env, 5);
 
-    // Write video
+    // Write videoIn
     // Define the codec and create VideoWriter object
-    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
-                         Size(vidWidth, vidHeight));
+    VideoWriter videoMidWrite(midName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
+                              Size(vidWidth, vidHeight));
 
     /*
      * ================= SPATIAL PROCESSING =================
@@ -595,7 +598,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     Mat frame1, rgbframe1, ntscframe1;
     vector<Mat> frame_stack;
     // Captures first frame
-    video >> frame1;
+    videoIn >> frame1;
 
     // BGR to NTSC frame color space
     cvtColor(frame1, rgbframe1, COLOR_BGR2RGB);
@@ -613,7 +616,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     vector<Mat> pyr_prev = pyr;
 
     // Writing the first frame (not processed)
-    videoOut.write(frame1);
+    videoMidWrite.write(frame1);
 
     int nLevels = (int)pyr.size();
     // Scalar vector for color attenuation in YIQ (NTSC) color space
@@ -621,17 +624,21 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
     float progress = 0;
 
+    Ptr<BackgroundSubtractorMOG2> bgSub = createBackgroundSubtractorMOG2(200, 100);
+    vector<int> contoursCount;
+    contoursCount.reserve(endIndex - 1);
+
     for (int i = startIndex; i < endIndex - 1; i++) {
 
         progress = (float) i / (float) endIndex;
 
         logDebugAndShowUser(env, "Video processing", "Processing frame " + to_string(i) +
-                            " of " + to_string(endIndex - 1));
+                            " of " + to_string(endIndex - 2));
 
         Mat frame, normalizedframe, rgbframe, out_frame, output;
         vector<Mat> filtered(nLevels);
         // Capture frame-by-frame
-        video >> frame;
+        videoIn >> frame;
 
         // Color conversion GBR 2 NTSC
         cvtColor(frame, rgbframe, COLOR_BGR2RGB);
@@ -711,7 +718,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
             lambda = lambda / 2.0f;
         }
 
-        // Render on the input video
+        // Render on the input videoIn
 
         output = reconLpyr(filtered);
 
@@ -728,13 +735,114 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
         cvtColor(frame, frame, COLOR_RGB2BGR);
 
-        videoOut.write(frame);
+        // EXTRACT BPM
+        Mat roi = frame(Rect(roiX, roiY, 100, 100));
+        Mat mask;
+        bgSub->apply(roi, mask);
+        vector<vector<Point>> contours;
+        findContours(mask, contours, RETR_TREE, CHAIN_APPROX_SIMPLE);
+        contoursCount.push_back(0);
+        for (int cnt = 0; cnt < contours.size(); cnt++) {
+            double area = contourArea(contours[cnt]);
+            if (area > 100)
+                contoursCount[i]++;
+        }
 
-        updateProgress(env, 5 + 95 * progress);
+        videoMidWrite.write(frame);
+        updateProgress(env, 5 + 75 * progress);
     }
 
-    // When everything done, release the video capture and write object
-    video.release();
+    videoIn.release();
+    videoMidWrite.release();
+
+
+    // BPM PROCESSING
+    double bpm = 0;
+    int totalPeakCount = 0;
+    const int CHUNK_SIZE = 3 * (int)(fr / fl);
+    unsigned int chunkCount = 1 + contoursCount.size() / CHUNK_SIZE;
+    vector<int> peakIndexes;
+    vector<vector<int>> peakIndexesByChunk;
+    vector<double> bpmValues;
+    peakIndexes.reserve(CHUNK_SIZE);
+    peakIndexesByChunk.reserve(chunkCount);
+    bpmValues.reserve(chunkCount);
+
+    for (int i = 1; i < contoursCount.size(); i++) {
+        if (i % CHUNK_SIZE == 0) {
+            // Finished chunk
+            peakIndexesByChunk.push_back(peakIndexes);
+            peakIndexes.clear();
+        }
+        if (contoursCount[i - 1] == 0 && contoursCount[i] >= 1) {
+            peakIndexes.push_back(i);
+            totalPeakCount++;
+        }
+    }
+
+    if(!peakIndexes.empty()) {
+        peakIndexesByChunk.push_back(peakIndexes);
+    }
+
+    if (totalPeakCount == 0) {
+        // No peaks found!
+        return "error";
+    }
+
+    // Display every N chunks
+    for (int i = 0; i < chunkCount; i++) {
+        double currBpm = 0;
+        if (peakIndexesByChunk[i].size() > 1) {
+            for (int j = 1; j < peakIndexesByChunk[i].size(); j++) {
+                currBpm += peakIndexesByChunk[i][j] - peakIndexesByChunk[i][j - 1];
+            }
+        } else {
+            // Keep using same bpm
+            currBpm = bpm;
+        }
+        bpm = fr * 60 *  peakIndexesByChunk[i].size() / currBpm;
+        bpmValues.push_back(bpm);
+    }
+
+
+    VideoCapture videoMidRead(midName);
+    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
+                              Size(vidWidth, vidHeight));
+
+    int chunkCounter = -1;
+    string bpmText;
+
+    for (int i = startIndex; i < endIndex - 1; i++) {
+
+        progress = (float) i / (float) endIndex;
+
+        if (i % CHUNK_SIZE == 0) {
+            chunkCounter++;
+            bpmText = "BPM: " + to_string(bpmValues[chunkCounter]);
+        }
+
+        logDebugAndShowUser(env, "Video output", "Writing frame " + to_string(i) +
+                                                     " of " + to_string(endIndex - 2));
+
+        Mat frame;
+        // Capture frame-by-frame
+        videoMidRead >> frame;
+
+        putText(frame, bpmText, Point(32, 32),
+                FONT_HERSHEY_COMPLEX_SMALL, 0.8,
+                Scalar(0, 0, 0), 1, LINE_AA);
+
+        putText(frame, bpmText, Point(30, 30),
+                FONT_HERSHEY_COMPLEX_SMALL, 0.8,
+                Scalar(255, 255, 255), 1, LINE_AA);
+
+        // Write the frame into the file 'outcpp.avi'
+        videoOut.write(frame);
+        updateProgress(env, 80 + 20 * progress);
+
+    }
+
+    videoMidRead.release();
     videoOut.release();
 
     etime = omp_get_wtime();
