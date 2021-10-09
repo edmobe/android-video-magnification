@@ -278,6 +278,7 @@ vector<Mat> ideal_bandpassing(vector<Mat> input, int dim, double wl, double wh, 
 }
 
 Mat cropFrame(Mat frame, int roiX, int roiY) {
+    // TODO: validate bounds
     if (roiX >= 50)
         roiX -= 50;
     if (roiY >= 50)

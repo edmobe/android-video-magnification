@@ -41,6 +41,31 @@ public class RegionOfInterest extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /*
+         TODO: change circle to square
+         TODO: verify if preview image is compressed
+
+             (0, 0)
+             o———————————————————————————————————————————————o————————————————————>
+             |            .                                  .
+             |            .                                  .
+             |            .                                  .
+             |            .                                  .
+             |            .  (roiX, roiY)                    .
+             o . . . . .  x——————————————————————————————————o
+             |            |                                  |
+             |            |                                  |
+             |            |                                  |
+             |            |                                  |
+             |            |                                  |
+             o . . . . .  o——————————————————————————————————x (roiX + 100, roiY + 100)
+             |
+             |
+             |
+             |
+             v
+
+         */
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_region_of_interest);
 
@@ -68,8 +93,8 @@ public class RegionOfInterest extends AppCompatActivity {
 
         seekBarX = findViewById(R.id.seek_roi_x);
         seekBarY = findViewById(R.id.seek_roi_y);
-        seekBarX.setMax(imageWidth);
-        seekBarY.setMax(imageHeight);
+        seekBarX.setMax(imageWidth - 100);
+        seekBarY.setMax(imageHeight - 100);
 
         updatePreview();
 
@@ -124,7 +149,9 @@ public class RegionOfInterest extends AppCompatActivity {
     private void updatePreview() {
         preview = thumbnail.copy(thumbnail.getConfig(), true);
         canvas = new Canvas(preview);
-        canvas.drawCircle(seekBarX.getProgress(), seekBarY.getProgress(), 20, paint);
+        float x1 = seekBarX.getProgress();
+        float x2 = seekBarY.getProgress();
+        canvas.drawRect(x1, x2, x1 + 100, x2 + 100, paint);
         imageView.setImageBitmap(preview);
     }
 }

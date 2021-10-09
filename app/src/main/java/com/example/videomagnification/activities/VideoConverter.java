@@ -1,6 +1,7 @@
 package com.example.videomagnification.activities;
 
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ public class VideoConverter extends AppCompatActivity {
     private String fileDir;
     String inputFileName;
     private Uri inputVideoUri;
+    private Uri compressedVideoUri;
     private String midVideoPath;
     private Uri outputVideoUri;
     private ProgressBar progressBar;
@@ -81,7 +83,7 @@ public class VideoConverter extends AppCompatActivity {
                         roiActivity.putExtra(getString(R.string.video_file_path),
                                 outputVideoUri.toString());
                         roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
-                                inputVideoUri.toString());
+                                compressedVideoUri.toString());
                         startActivity(roiActivity);
                     };
 
@@ -160,15 +162,49 @@ public class VideoConverter extends AppCompatActivity {
         // TODO: Error handling
         String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
                 this, inputVideoUri);
+
         ((App)getApplication()).logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
+
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
+        String compressedVideoPath = fileDir + inputBaseName + "_compressed.mp4";
         String midVideoPath = fileDir + inputBaseName + ".mjpeg";
+
+        // Compress video
+        // TODO: validate that the video is less than 20 seconds long
+        // TODO: put conversion in another method
+        // TODO: display progress bar to user more accurately
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(getApplicationContext(), inputVideoUri);
+        int width = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+        int height = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+
+        // Compress
+        if (width * height > 640 * 640) {
+            String scale = " -vf scale=640:-1 ";
+
+            if (width < height) {
+                // Vertical
+                scale = " -vf scale=-1:640 ";
+            }
+
+            // Horizontal
+            FFmpegSession resizeSession = FFmpegKit.execute(
+                    "-y -i " + inputVideoPath + scale + compressedVideoPath);
+        }
+
+        compressedVideoUri = Uri.fromFile(new File(compressedVideoPath));
+
+//        FFmpegSession compressSession = FFmpegKit.execute(
+//                "-y -i " + inputVideoPath + " -vcodec mpeg4 -crf 28 " + compressedVideoPath);
+
+
 //        FFmpegSession session0 = FFmpegKit.execute("-codecs");
 //        ((App)getApplication()).logDebug(
 //                "Native lib", "Session 0 info: " + session0.getAllLogsAsString());
+
         FFmpegSession session1 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
+                "-y -i " + compressedVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 1 info: " + session1.getAllLogsAsString());
         ((App)getApplication()).logDebug(
@@ -197,10 +233,11 @@ public class VideoConverter extends AppCompatActivity {
 
     private Uri convertMjpegToAvi(String inputVideoPath) {
         // TODO: Error handling
+        // TODO: remove conversion files when finished
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = fileDir + inputBaseName + ".avi";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -q:v 2 -r 30 -vcodec mjpeg " + outputVideoPath);
+                "-y -i " + inputVideoPath + " -q:v 2 -r 30 -vcodec mjpeg " + outputVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
         ((App)getApplication()).logDebug(

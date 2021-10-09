@@ -64,8 +64,11 @@ public class MainActivity extends AppCompatActivity {
                     // Baby: 150, 6, 2.33, 2.66, 30, 1, 294, 170
                     // Face 2: 250, 6, 1, 1.66, 30, 1, 966, 338
                     magnificator = new MagnificatorGdownIdeal(
-                            videoPath, FilenameUtils.getPath(videoPath), 150, 6, 2.33, 2.66,
-                            30, 1, 294, 170);
+                            videoPath, FilenameUtils.getPath(videoPath), 100, 6, 1, 1.66,
+                            30, 1, roiX, roiY);
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 150, 6, 2.33, 2.66,
+//                            30, 1, 294, 170);
 //                    magnificator = new MagnificatorGdownIdeal(
 //                            videoPath, FilenameUtils.getPath(videoPath), alpha, level, fl, fh,
 //                            sampling, chromAtt, roiX, roiY);
