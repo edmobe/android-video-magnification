@@ -190,7 +190,7 @@ public class VideoConverter extends AppCompatActivity {
 
             // Horizontal
             FFmpegSession resizeSession = FFmpegKit.execute(
-                    "-y -i " + inputVideoPath + scale + compressedVideoPath);
+                    "-y -i " + inputVideoPath + scale + " -q:v 2 " + compressedVideoPath);
         }
 
         compressedVideoUri = Uri.fromFile(new File(compressedVideoPath));
@@ -221,7 +221,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String midVideoPath = fileDir + inputBaseName + ".mjpeg";
         FFmpegSession session1 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath + " -vcodec mpeg4 -acodec aac " + midVideoPath);
+                "-y -i " + inputVideoPath + " -q:v 2 -vcodec mpeg4 -acodec aac " + midVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 1 info: " + session1.getAllLogsAsString());
         ((App)getApplication()).logDebug(
@@ -253,7 +253,7 @@ public class VideoConverter extends AppCompatActivity {
         String inputBaseName = FilenameUtils.getBaseName(inputVideoPath);
         String outputVideoPath = fileDir + inputBaseName + ".mp4";
         FFmpegSession session2 = FFmpegKit.execute(
-                "-y -i " + inputVideoPath+ " -vcodec mpeg4 -acodec aac " + outputVideoPath);
+                "-y -i " + inputVideoPath+ " -q:v 2 -vcodec mpeg4 -acodec aac " + outputVideoPath);
         ((App)getApplication()).logDebug(
                 "Native lib", "Session 2 info: " + session2.getAllLogsAsString());
         ((App)getApplication()).logDebug(
