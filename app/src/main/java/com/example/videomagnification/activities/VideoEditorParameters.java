@@ -82,9 +82,9 @@ public class VideoEditorParameters extends AppCompatActivity {
         textLevel = findViewById(R.id.text_level);
         textLevel.setText(String.valueOf(getLevel()));
         textFl = findViewById(R.id.text_fl);
-        textFl.setText(String.valueOf(getFl()));
+        textFl.setText(String.format("%.02f", 60 * getFl()));
         textFh = findViewById(R.id.text_fh);
-        textFh.setText(String.valueOf(getFh()));
+        textFh.setText(String.format("%.02f", 60 * getFh()));
         textSampling = findViewById(R.id.text_sampling);
         textSampling.setText(String.valueOf(getSampling()));
         textChromAtt = findViewById(R.id.text_chrom_att);
@@ -225,9 +225,9 @@ public class VideoEditorParameters extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress >= seekFh.getProgress()) {
                     seekFh.setProgress(progress + 1);
-                    textFh.setText(String.valueOf(getFh()));
+                    textFh.setText(String.format("%.02f", 60 * getFh()));
                 }
-                textFl.setText(String.valueOf(progress / FLOAT_DIVIDER));
+                textFl.setText(String.format("%.02f", 60 * progress / FLOAT_DIVIDER));
             }
 
             @Override
@@ -246,9 +246,9 @@ public class VideoEditorParameters extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(progress <= seekFl.getProgress()) {
                     seekFl.setProgress(progress - 1);
-                    textFl.setText(String.valueOf(getFl()));
+                    textFl.setText(String.format("%.02f", 60 * getFl()));
                 }
-                textFh.setText(String.valueOf(progress / FLOAT_DIVIDER));
+                textFh.setText(String.format("%.02f", 60 * progress / FLOAT_DIVIDER));
             }
 
             @Override

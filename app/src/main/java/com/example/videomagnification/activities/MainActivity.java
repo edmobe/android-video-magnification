@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 if (algorithmId == R.id.radio_gaussian_ideal) {
                     // Baby 2: 150, 6, 2.33, 2.66, 30, 1, 294, 170
                     // Face 2: 150, 6, 1, 1.66, 30, 1, 294, 170
-                    // Baby: 30, 16, 0.4, 3, 30, 0.1
+                    // Baby: 30, 16, 0.4, 3, 30, 0.1 -----> 24 bpm to 180 bpm
 //                    magnificator = new MagnificatorGdownIdeal(
 //                            videoPath, FilenameUtils.getPath(videoPath), 100, 6, 1, 1.66,
 //                            30, 1, roiX, roiY);
@@ -72,12 +72,12 @@ public class MainActivity extends AppCompatActivity {
 //                            30, 1, 294, 170);
                     magnificator = new MagnificatorGdownIdeal(
                             videoPath, FilenameUtils.getPath(videoPath), 150, 6,
-                            1, 1.66, 30, 1, roiX, roiY);
+                            fl, fh, 30, 1, roiX, roiY);
                     result = magnificator.call();
                 } else if (algorithmId == R.id.radio_laplacian_butterworth) {
                     magnificator = new MagnificatorLpyrButter(
                             videoPath, FilenameUtils.getPath(videoPath), 30, 16,
-                            0.4, 3, 30, 0.1, roiX, roiY);
+                            fl, fh, 30, 0.1, roiX, roiY);
                     result = magnificator.call();
                 } else {
                     // Unknown algorithm

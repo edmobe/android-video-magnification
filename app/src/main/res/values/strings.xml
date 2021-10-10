@@ -26,8 +26,8 @@
     <string name="select_parameters">Select parameters</string>
     <string name="alpha">Alpha</string>
     <string name="lambda_c">Lambda C</string>
-    <string name="low_frequency">Low frequency</string>
-    <string name="high_frequency">High frequency</string>
+    <string name="low_frequency">Minimum BPM</string>
+    <string name="high_frequency">Maximum BPM</string>
     <string name="sampling_rate">Sampling rate</string>
     <string name="chrom_attenuation">Chrom Attenuation</string>
     <string name="temporal_filtering">Temporal filtering</string>

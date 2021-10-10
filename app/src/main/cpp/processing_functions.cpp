@@ -759,11 +759,13 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     // BPM PROCESSING
     double bpm = 0;
     int totalPeakCount = 0;
-    const int CHUNK_SIZE = 3 * (int)(fr / fl);
-    unsigned int chunkCount = 1 + contoursCount.size() / CHUNK_SIZE;
+    const int CHUNK_SIZE = 5 * fr; // Every 5 seconds
+    unsigned int chunkCount = 1 + endIndex / CHUNK_SIZE; // Total chunks
+    vector<bool> signal;
     vector<int> peakIndexes;
     vector<vector<int>> peakIndexesByChunk;
     vector<double> bpmValues;
+    signal.reserve(endIndex);
     peakIndexes.reserve(CHUNK_SIZE);
     peakIndexesByChunk.reserve(chunkCount);
     bpmValues.reserve(chunkCount);
@@ -775,8 +777,11 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
             peakIndexes.clear();
         }
         if (contoursCount[i - 1] == 0 && contoursCount[i] >= 1) {
+            signal.push_back(true);
             peakIndexes.push_back(i);
             totalPeakCount++;
+        } else {
+            signal.push_back(false);
         }
     }
 
@@ -789,21 +794,6 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
         return "error";
     }
 
-    // Display every N chunks
-    for (int i = 0; i < chunkCount; i++) {
-        double currBpm = 0;
-        if (peakIndexesByChunk[i].size() > 1) {
-            for (int j = 1; j < peakIndexesByChunk[i].size(); j++) {
-                currBpm += peakIndexesByChunk[i][j] - peakIndexesByChunk[i][j - 1];
-            }
-        } else {
-            // Keep using same bpm
-            currBpm = bpm;
-        }
-        bpm = fr * 60 *  peakIndexesByChunk[i].size() / currBpm;
-        bpmValues.push_back(bpm);
-    }
-
 
     VideoCapture videoMidRead(midName);
     VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
@@ -811,22 +801,49 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
     int chunkCounter = -1;
     string bpmText;
+    int INDICATOR_LEN = 5;
+    int indicator_counter = 0;
 
     for (int i = startIndex; i < endIndex - 1; i++) {
 
         progress = (float) i / (float) endIndex;
 
         if (i % CHUNK_SIZE == 0) {
+            // Update BPM
             chunkCounter++;
-            bpmText = "BPM: " + to_string(bpmValues[chunkCounter]);
+            double currBpm = 0;
+            if (peakIndexesByChunk[chunkCounter].size() > 1) {
+                for (int j = 1; j < peakIndexesByChunk[chunkCounter].size(); j++) {
+                    currBpm += peakIndexesByChunk[chunkCounter][j] -
+                            peakIndexesByChunk[chunkCounter][j - 1];
+                }
+            }
+
+            if(currBpm == 0) {
+                currBpm = bpm;
+            }
+            bpm = currBpm;
+
+            bpmText = "BPM: " + to_string(currBpm);
         }
 
         logDebugAndShowUser(env, "Video output", "Writing frame " + to_string(i) +
                                                      " of " + to_string(endIndex - 2));
 
+        if(signal[i]) {
+            indicator_counter = INDICATOR_LEN;
+        }
+
         Mat frame;
         // Capture frame-by-frame
         videoMidRead >> frame;
+
+        if (indicator_counter > 0) {
+            printIndicator(frame, vidWidth, true);
+            indicator_counter--;
+        } else {
+            printIndicator(frame, vidWidth, false);
+        }
 
         putText(frame, bpmText, Point(32, 32),
                 FONT_HERSHEY_COMPLEX_SMALL, 0.8,
