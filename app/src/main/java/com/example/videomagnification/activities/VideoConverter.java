@@ -30,7 +30,7 @@ public class VideoConverter extends AppCompatActivity {
     private String fileDir;
     String inputFileName;
     private Uri inputVideoUri;
-    private Uri compressedVideoUri;
+    private String compressedVideoPath;
     private String midVideoPath;
     private Uri outputVideoUri;
     private ProgressBar progressBar;
@@ -86,7 +86,7 @@ public class VideoConverter extends AppCompatActivity {
                         roiActivity.putExtra(getString(R.string.video_file_path),
                                 outputVideoUri.toString());
                         roiActivity.putExtra(getString(R.string.video_file_path_thumbnail),
-                                compressedVideoUri.toString());
+                                compressedVideoPath);
                         startActivity(roiActivity);
                     };
 
@@ -205,32 +205,34 @@ public class VideoConverter extends AppCompatActivity {
         int height = Integer.parseInt(
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
 
-        String compressedVideoPath;
+        compressedVideoPath = fileDir + inputBaseName + "_compressed.mp4";
+        String scale;
 
         // Compress
         if (width * height > 640 * 640) {
-            compressedVideoPath = fileDir + inputBaseName + "_compressed.mp4";
-            String scale = " -vf scale=640:-2 ";
-
-            if (width < height) {
-                // Vertical
+            // Must resize the video
+            if (width > height) {
+                // Horizontal
+                scale = " -vf scale=640:-2 ";
+            } else {
+                // Vertical or squared
                 scale = " -vf scale=-2:640 ";
             }
-
-            // Horizontal
-            FFmpegSession resizeSession = FFmpegKit.execute(
-                    "-y -i " + inputVideoPath + scale + " -q:v 2 " + compressedVideoPath);
-
-            ((App)getApplication()).logDebug(
-                    "Native lib", "Resize session info: " +
-                            resizeSession.getAllLogsAsString());
-            ((App)getApplication()).logDebug(
-                    "Native lib", "Successfully resized video");
         } else {
-            compressedVideoPath = inputVideoPath;
+            // Just avoid divisible by 2 error
+            // https://stackoverflow.com/questions/20847674/ffmpeg-libx264-height-not-divisible-by-2
+            scale = " -vf \"crop=trunc(iw/2)*2:trunc(ih/2)*2\" ";
         }
 
-        compressedVideoUri = Uri.fromFile(new File(compressedVideoPath));
+        // Horizontal
+        FFmpegSession resizeSession = FFmpegKit.execute(
+                "-y -i " + inputVideoPath + scale + " -q:v 2 " + compressedVideoPath);
+
+        ((App)getApplication()).logDebug(
+                "Native lib", "Resize session info: " +
+                        resizeSession.getAllLogsAsString());
+        ((App)getApplication()).logDebug(
+                "Native lib", "Successfully resized video");
 
         FFmpegSession session1 = FFmpegKit.execute(
                 "-y -i " + compressedVideoPath + " -q:v 2 -vcodec mjpeg " + midVideoPath);
