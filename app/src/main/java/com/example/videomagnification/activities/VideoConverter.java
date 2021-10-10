@@ -56,7 +56,7 @@ public class VideoConverter extends AppCompatActivity {
                     outputVideoUri = convertMjpegToAvi(midVideoPath);
                 else {
                     outputVideoUri = convertMjpegToMp4(midVideoPath);
-                    //deleteFiles();
+                    deleteFiles();
                 }
 
                 ((App) getApplication()).logDebug(
@@ -192,7 +192,6 @@ public class VideoConverter extends AppCompatActivity {
 
         String inputBaseName = FilenameUtils.removeExtension(
                 ((App) getApplication()).getFileNameFromUri(inputVideoUri));
-        String compressedVideoPath = fileDir + inputBaseName + "_compressed.mp4";
         String midVideoPath = fileDir + inputBaseName + ".mjpeg";
 
         // Compress video
@@ -206,8 +205,11 @@ public class VideoConverter extends AppCompatActivity {
         int height = Integer.parseInt(
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
 
+        String compressedVideoPath;
+
         // Compress
         if (width * height > 640 * 640) {
+            compressedVideoPath = fileDir + inputBaseName + "_compressed.mp4";
             String scale = " -vf scale=640:-2 ";
 
             if (width < height) {
@@ -224,6 +226,8 @@ public class VideoConverter extends AppCompatActivity {
                             resizeSession.getAllLogsAsString());
             ((App)getApplication()).logDebug(
                     "Native lib", "Successfully resized video");
+        } else {
+            compressedVideoPath = inputVideoPath;
         }
 
         compressedVideoUri = Uri.fromFile(new File(compressedVideoPath));

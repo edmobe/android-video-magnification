@@ -345,7 +345,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     // Amplify color channels in NTSC
     Scalar color_amp(alpha, alpha * chromAttenuation, alpha * chromAttenuation);
 
-#pragma omp parallel for shared(color_amp, filtered_stack)
+#pragma omp parallel for default(none) shared(color_amp, filtered_stack)
     for (int ind_amp = 0; ind_amp < filtered_stack.size(); ind_amp++) {
         Mat frame, frame_result;
         frame = filtered_stack[ind_amp];
@@ -542,11 +542,11 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     cout << name << endl;
 
     // Creates the result videoIn name
-    string midName = outDir + name + "-butter-from-" + to_string(fl) + "-to-" +
-                     to_string(fh) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
+    string midName = outDir + name + "-breath-from-" + to_string(fl * 60) + "-to-" +
+                     to_string(fh * 60) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
                      "-chromAtn-" + to_string(chromAttenuation) + "-tmp" ".avi";
-    string outName = outDir + name + "-butter-from-" + to_string(fl) + "-to-" +
-                     to_string(fh) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
+    string outName = outDir + name + "-breath-from-" + to_string(fl * 60) + "-to-" +
+                     to_string(fh * 60) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
                      "-chromAtn-" + to_string(chromAttenuation) + ".avi";
 
     logDebug("Video reception - Output file", outName);
@@ -654,7 +654,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
         //      high_b[0];
         //  lowpass2 = (lowpass2 * -low_b[1] + pyr * low_a[0] + pyr_prev * low_a[1]) /
         //      low_b[0];
-#pragma omp parallel for shared(low_a, low_b, high_a, high_b, lowpass1, lowpass2, pyr_prev, pyr, filtered)
+#pragma omp parallel for default(none) shared(low_a, low_b, high_a, high_b, lowpass1, lowpass2, pyr_prev, pyr, filtered, nLevels)
         for (int l = 0; l < nLevels; l++) {
             Mat lp1_h, pyr_h, pre_h, lp1_s, lp1_r;
             Mat lp2_l, pyr_l, pre_l, lp2_s, lp2_r;
@@ -742,6 +742,8 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
         vector<vector<Point>> contours;
         findContours(mask, contours, RETR_TREE, CHAIN_APPROX_SIMPLE);
         contoursCount.push_back(0);
+
+#pragma omp parallel for shared(contours, contoursCount)
         for (int cnt = 0; cnt < contours.size(); cnt++) {
             double area = contourArea(contours[cnt]);
             if (area > 100)
@@ -813,6 +815,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
             chunkCounter++;
             double currBpm = 0;
             if (peakIndexesByChunk[chunkCounter].size() > 1) {
+                #pragma omp parallel for default(none) shared(peakIndexesByChunk, currBpm, chunkCounter)
                 for (int j = 1; j < peakIndexesByChunk[chunkCounter].size(); j++) {
                     currBpm += peakIndexesByChunk[chunkCounter][j] -
                             peakIndexesByChunk[chunkCounter][j - 1];

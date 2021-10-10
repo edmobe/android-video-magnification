@@ -71,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
 //                            videoPath, FilenameUtils.getPath(videoPath), 150, 6, 2.33, 2.66,
 //                            30, 1, 294, 170);
                     magnificator = new MagnificatorGdownIdeal(
-                            videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+                            videoPath, FilenameUtils.getPath(videoPath), 200, 6,
                             fl, fh, 30, 1, roiX, roiY);
                     result = magnificator.call();
                 } else if (algorithmId == R.id.radio_laplacian_butterworth) {
                     magnificator = new MagnificatorLpyrButter(
-                            videoPath, FilenameUtils.getPath(videoPath), 30, 16,
+                            videoPath, FilenameUtils.getPath(videoPath), alpha, 16,
                             fl, fh, 30, 0.1, roiX, roiY);
                     result = magnificator.call();
                 } else {
