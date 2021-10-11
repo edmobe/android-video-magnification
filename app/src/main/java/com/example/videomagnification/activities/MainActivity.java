@@ -70,9 +70,32 @@ public class MainActivity extends AppCompatActivity {
 //                    magnificator = new MagnificatorGdownIdeal(
 //                            videoPath, FilenameUtils.getPath(videoPath), 150, 6, 2.33, 2.66,
 //                            30, 1, 294, 170);
+                    // SAMSUNG PHONE
+//                    // TEST 1
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 100, 6,
+//                            60.0 / 60.0, 100.0 / 60.0, 30, 1, 132, 23);
+//                    // TEST 2
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 80, 6,
+//                            70.0 / 60.0, 90.0 / 60.0, 30, 1, 132, 23);
+//                    // TEST 3
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+//                            80.0 / 60.0, 90.0 / 60.0, 30, 1, 132, 23);
+                    // BLUESTACKS
+                    // TEST 1
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 50, 6,
+//                            60.0 / 60.0, 100.0 / 60.0, 30, 1, 132, 23);
+//                    // TEST 2
+//                    magnificator = new MagnificatorGdownIdeal(
+//                            videoPath, FilenameUtils.getPath(videoPath), 80, 6,
+//                            70.0 / 60.0, 90.0 / 60.0, 30, 1, 132, 23);
+                    // TEST 3
                     magnificator = new MagnificatorGdownIdeal(
-                            videoPath, FilenameUtils.getPath(videoPath), 200, 6,
-                            fl, fh, 30, 1, roiX, roiY);
+                            videoPath, FilenameUtils.getPath(videoPath), 150, 6,
+                            80.0 / 60.0, 90.0 / 60.0, 30, 1, 132, 23);
                     result = magnificator.call();
                 } else if (algorithmId == R.id.radio_laplacian_butterworth) {
                     magnificator = new MagnificatorLpyrButter(

@@ -277,6 +277,31 @@ vector<Mat> ideal_bandpassing(vector<Mat> input, int dim, double wl, double wh, 
     return input;
 }
 
+double calculateBpm(int highFrameIndex, int lowFrameIndex, int fr) {
+    return fr * 60 / (highFrameIndex - lowFrameIndex);
+}
+
+double calculateAverageBpm(vector<int> data, int fr, double fh, double fl) {
+    float maxBpm = fh * 60;
+    float minBpm = fl * 60;
+    double bpm = 0;
+    double currBpm = 0;
+    double averageBpm = 0;
+    int incorrectReadings = 0;
+    for (int i = 1; i < data.size(); i++) {
+        currBpm = calculateBpm(data[i], data[i - 1], fr);
+        if (currBpm > maxBpm || currBpm < minBpm)
+            incorrectReadings++;
+        else
+            bpm += currBpm;
+    }
+
+    averageBpm = bpm / ((data.size() - 1) - incorrectReadings);
+    bpm = bpm + averageBpm * incorrectReadings;
+
+    return bpm / (data.size() - 1);
+}
+
 Mat cropFrame(Mat frame, int roiX, int roiY) {
     // TODO: validate bounds
     if (roiX >= 50)

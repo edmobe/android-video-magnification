@@ -279,8 +279,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     name = name.substr(0, name.find("."));
 
     // Creates the result video name
-    string outName = outDir + name + "-ideal-from-" + to_string(fl) + "-to-" +
-                     to_string(fh) + "-alpha-" + to_string(alpha) + "-level-" + to_string(level) +
+    string outName = outDir + name + "-heart-from-" + to_string(60 * fl) + "-to-" +
+                     to_string(60 * fh) + "-alpha-" + to_string(alpha) + "-level-" + to_string(level) +
                      "-chromAtn-" + to_string(chromAttenuation) + ".avi";
 
     logDebug("Video reception - Output file", outName);
@@ -296,6 +296,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
         updateProgress(env, 100);
         return "error";
     }
+    
 
     // Extracting video info
     int vidHeight = (int)video.get(CAP_PROP_FRAME_HEIGHT);
@@ -361,7 +362,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
     int progress = 0;
 
-#pragma omp parallel for shared(video, Gdown_stack, filtered_stack)
+#pragma omp parallel for default(none) shared(startIndex, endIndex, video, Gdown_stack, filtered_stack, vidWidth, vidHeight)
     for (int i = startIndex; i < endIndex; i++) {
 
         Mat frame, rgbframe, d_frame, ntscframe, filt_ind, filtered, out_frame;
@@ -394,8 +395,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     updateProgress(env, 90);
 
     // BPM EXTRACTION DATA
-    const int CHUNK_SIZE = 90; // Every 90 frames get a sample
-    const int lag = 10;
+    const int CHUNK_SIZE = 5 * fr; // Every 5 seconds
+    const int lag = 5;
     const ld threshold = 1.0;
     const ld influence = 0.9;
     vector<ld> heartRateData;
@@ -417,7 +418,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     vector<double> bpmVector = {};
 
     // First frame
-    printIndicator(filtered_stack[0], vidWidth, true);
+    printIndicator(filtered_stack[0], vidWidth, false);
 
     // Given N chunks in peakIndexes = [ CHUNK 1 | CHUNK 2 | ... | CHUNK N]
     for (int i = 1; i < signals.size(); i++) {
@@ -426,31 +427,46 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
             double diff = 0;
             int diffCount = 0;
             // Get chunk differences
-            for (int j = 1; j < chunkIndexes.size(); j++) {
-                diff += chunkIndexes[j] - chunkIndexes[j - 1];
-                diffCount++;
+            if (chunkIndexes.size() > 1) {
+                bpmVector.push_back(calculateAverageBpm(chunkIndexes, fr, fh, fl));
+                chunkIndexes.clear();
+            } else {
+                // Use last BPM
+                bpmVector.push_back(bpmVector[bpmVector.size() - 1]);
             }
-            bpmVector.push_back(fr * 60 * diffCount / diff);
-            chunkIndexes.empty();
         }
 
         // Positive edge found
-        if ((signals[i - 1] == 0 || signals[i - 1] == -1) && signals[i] == 1) {
+        if (signals[i - 1] <= 0 && signals[i] == 1) {
             peakIndexes.push_back(i);
             chunkIndexes.push_back(i);
             // Print heart rate indicator for 5 frames
             for (int j = i; j < i + 5; j++) {
                 if (j <= signals.size())
-                    printIndicator(filtered_stack[j - 1], vidWidth, false);
+                    printIndicator(filtered_stack[j - 1], vidWidth, true);
             }
         } else {
-            printIndicator(filtered_stack[i], vidWidth, true);
+            printIndicator(filtered_stack[i], vidWidth, false);
         }
 
     }
 
+    // For last chunk
+    if (chunkIndexes.size() > 1) {
+        double diff = 0;
+        int diffCount = 0;
+        // Get chunk differences
+        if (chunkIndexes.size() > 1) {
+            bpmVector.push_back(calculateAverageBpm(chunkIndexes, fr, fh, fl));
+            chunkIndexes.clear();
+        } else {
+            // Use last BPM
+            bpmVector.push_back(bpmVector[bpmVector.size() - 1]);
+        }
+    }
+
     for (int i = startIndex; i < endIndex; i++) {
-        // Print BPM every 90 frames
+        // Print BPM every N frames
         if (i % CHUNK_SIZE == 0) {
             int index = i / CHUNK_SIZE;
             bpmText = "BPM: " + to_string(bpmVector[index]);
@@ -693,7 +709,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
         double lambda = pow(pow(vidHeight, 2.0f) + pow(vidWidth, 2.0f), 0.5f) / 3.0f; // is experimental constant
 
-#pragma omp parallel for shared(filtered, alpha, exaggeration_factor, delta, lambda)
+#pragma omp parallel for default(none) shared(nLevels, filtered, alpha, exaggeration_factor, delta, lambda)
         for (int l = nLevels - 1; l >= 0; l--) {
             // go one level down on pyramid each stage
 

@@ -42,6 +42,7 @@ public class VideoConverter extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             // TODO: ERROR HANDLING
+            // TODO: FIX OUTPUT VIDEO NOT WORKING ON WINDOWS 10
             try {
                 createDirectoryIfNeeded();
                 progressBar.setProgress(20);
