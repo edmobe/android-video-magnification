@@ -28,14 +28,14 @@ void logDebugAndShowUser(JNIEnv *env, std::string title, std::string str) {
     std::string output = title + ": " + str;
     jstring jstring1 = env->NewStringUTF(output.c_str());
 
-    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jclass clazz = env->FindClass("com/example/videomagnification/gui/NativeLibManagerActivity");
     jmethodID methodId = env->GetStaticMethodID(clazz, "updateMagnifierLog",
                                           "(Ljava/lang/String;)V");
     env->CallStaticVoidMethod(clazz, methodId, jstring1);
 }
 
 void updateProgress(JNIEnv *env, int progress) {
-    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jclass clazz = env->FindClass("com/example/videomagnification/gui/NativeLibManagerActivity");
     jmethodID methodId = env->GetStaticMethodID(clazz, "updateProgress",
                                                 "(I)V");
     env->CallStaticVoidMethod(clazz, methodId, progress);

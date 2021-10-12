@@ -1,4 +1,4 @@
-package com.example.videomagnification.application;
+package com.example.videomagnification.utils.seekbar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package com.example.videomagnification.activities;
+package com.example.videomagnification.gui.interaction;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,23 +10,18 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
-import com.example.videomagnification.application.AccurateSeekBar;
+import com.example.videomagnification.gui.processing.NativeLibManagerActivity;
+import com.example.videomagnification.application.App;
+import com.example.videomagnification.utils.seekbar.AccurateSeekBar;
 
-public class VideoEditorParameters extends AppCompatActivity {
+public class VideoEditorParametersActivity extends AppCompatActivity {
 
     private final float FLOAT_DIVIDER = 100f;
-
-    private Intent intent;
-    private String videoPath;
-    private int extract;
-    private int roiX;
-    private int roiY;
 
     private TextView videoPathTextView;
     private TextView algorithmTextView;
     private TextView extractTextView;
     private TextView roiTextView;
-    private int algorithmRadioButtonId;
 
     AccurateSeekBar[] integerSeeks;
     AccurateSeekBar[] floatSeeks;
@@ -53,14 +48,6 @@ public class VideoEditorParameters extends AppCompatActivity {
     private TextView textR2;
 
     private Button start;
-
-    private void getIntentDetails() {
-        intent = getIntent(); // gets the previously created intent
-        videoPath = intent.getStringExtra(getString(R.string.video_file_path));
-        extract = intent.getIntExtra(getString(R.string.extract), 0);
-        roiX = intent.getIntExtra(getString(R.string.roi_x), 1);
-        roiY = intent.getIntExtra(getString(R.string.roi_y), 1);
-    }
 
     private void getAllParameters() {
         // SeekBars
@@ -96,18 +83,18 @@ public class VideoEditorParameters extends AppCompatActivity {
 
         // General data
         videoPathTextView = findViewById(R.id.text_video_path);
-        videoPathTextView.setText(videoPath);
+        videoPathTextView.setText(App.getAppData().getMp4VideoPath());
         extractTextView = findViewById(R.id.text_extract);
-        if (extract == R.id.radio_gaussian_ideal)
+        if (App.getAppData().getSelectedAlgorithmOption() == R.id.radio_gaussian_ideal)
             extractTextView.setText("Heart rate");
-        else if (extract == R.id.radio_laplacian_butterworth)
+        else if (App.getAppData().getSelectedAlgorithmOption() == R.id.radio_laplacian_butterworth)
             extractTextView.setText("Respiratory rate");
         else {
             extractTextView.setText("Unable to get data");
             start.setEnabled(false);
         }
         roiTextView = findViewById(R.id.text_roi);
-        String roi = "X = " + roiX + " Y = " + roiY;
+        String roi = "X = " + App.getAppData().getRoiX() + " Y = " + App.getAppData().getRoiY();
         roiTextView.setText(roi);
 
         // Arrays
@@ -152,8 +139,7 @@ public class VideoEditorParameters extends AppCompatActivity {
     }
 
     private void setParametersBasedOnAlgorithm() {
-        algorithmRadioButtonId = intent.getIntExtra(
-                getString(R.string.select_an_algorithm), -1);
+        int algorithmRadioButtonId = App.getAppData().getSelectedAlgorithmOption();
 
         String spatialFiltering = "";
         String temporalFiltering = "";
@@ -167,8 +153,7 @@ public class VideoEditorParameters extends AppCompatActivity {
             hideLaplacianIdealButterElements();
         } else {
             Intent videoEditorActivity =
-                    new Intent(getApplicationContext(), VideoEditorParameters.class);
-            videoEditorActivity.putExtra(getString(R.string.video_file_path), videoPath);
+                    new Intent(getApplicationContext(), VideoEditorParametersActivity.class);
             startActivity(videoEditorActivity);
         }
 
@@ -265,41 +250,31 @@ public class VideoEditorParameters extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // TODO: Sampling rate range too large
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_editor_parameters);
 
-        getIntentDetails();
         getAllParameters();
         setParametersBasedOnAlgorithm();
         setSeekBarListeners();
 
         start = findViewById(R.id.btn_start);
         start.setOnClickListener(v -> {
-            Intent mainActivityIntent = new Intent(getApplicationContext(), MainActivity.class);
-            mainActivityIntent.putExtra(getString(R.string.video_file_path), videoPath);
-            mainActivityIntent.putExtra(getString(R.string.alpha), getAlpha());
-            mainActivityIntent.putExtra(getString(R.string.lambda_c), getLambda());
-            mainActivityIntent.putExtra(getString(R.string.level), getLevel());
-            mainActivityIntent.putExtra(getString(R.string.low_frequency), getFl());
-            mainActivityIntent.putExtra(getString(R.string.high_frequency), getFh());
-            mainActivityIntent.putExtra(getString(R.string.sampling_rate), getSampling());
-            mainActivityIntent.putExtra(getString(R.string.chrom_attenuation), getChromAtt());
-            mainActivityIntent.putExtra(getString(R.string.r1), getR1());
-            mainActivityIntent.putExtra(getString(R.string.r2), getR2());
-            mainActivityIntent.putExtra(getString(R.string.extract), extract);
-            mainActivityIntent.putExtra(getString(R.string.select_an_algorithm),
-                    algorithmRadioButtonId);
-            mainActivityIntent.putExtra(getString(R.string.roi_x),
-                    intent.getIntExtra(getString(R.string.roi_x), 1));
-            mainActivityIntent.putExtra(getString(R.string.roi_y),
-                    intent.getIntExtra(getString(R.string.roi_y), 1));
-            startActivity(mainActivityIntent);
+            App.getAppData().setAlpha(getAlpha());
+            App.getAppData().setLambda(getLambda());
+            App.getAppData().setLevel(getLevel());
+            App.getAppData().setFl(getFl());
+            App.getAppData().setFh(getFh());
+            App.getAppData().setSampling(getSampling());
+            App.getAppData().setChromAtt(getChromAtt());
+            App.getAppData().setR1(getR1());
+            App.getAppData().setR2(getR2());
+
+            startActivity(new Intent(getApplicationContext(), NativeLibManagerActivity.class));
         });
     }
 
-    private int getAlpha() {
-        return seekAlpha.getProgress();
-    }
+    private int getAlpha() { return seekAlpha.getProgress(); }
     private int getLambda() {
         return seekLambda.getProgress();
     }

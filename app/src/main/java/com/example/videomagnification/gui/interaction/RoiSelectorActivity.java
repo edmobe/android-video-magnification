@@ -1,4 +1,4 @@
-package com.example.videomagnification.activities;
+package com.example.videomagnification.gui.interaction;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,17 +16,15 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
+import com.example.videomagnification.application.App;
 
-public class RegionOfInterest extends AppCompatActivity {
+public class RoiSelectorActivity extends AppCompatActivity {
 
     private SeekBar seekBarX;
     private SeekBar seekBarY;
     private TextView textViewX;
     private TextView textViewY;
     ImageView imageView;
-
-    private int imageWidth;
-    private int imageHeight;
 
     private Bitmap thumbnail;
     private Bitmap preview;
@@ -44,6 +42,7 @@ public class RegionOfInterest extends AppCompatActivity {
         /*
          TODO: change circle to square
          TODO: verify if preview image is compressed
+         TODO: verify if it is always in range
 
              (0, 0)
              o———————————————————————————————————————————————o————————————————————>
@@ -69,10 +68,8 @@ public class RegionOfInterest extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_region_of_interest);
 
-        Intent intent = getIntent(); // gets the previously created intent
-        String inputFileName = intent.getStringExtra(getString(R.string.video_file_path));
-        String thumbnailFileName = intent.getStringExtra(
-                getString(R.string.video_file_path_thumbnail));
+        String inputFileName = App.getAppData().getAviVideoPath();
+        String thumbnailFileName = App.getAppData().getCompressedVideoPath();
 
         inputVideoUri = Uri.parse(inputFileName);
         thumbnailUri = Uri.parse(thumbnailFileName);
@@ -86,8 +83,11 @@ public class RegionOfInterest extends AppCompatActivity {
         paint.setStrokeWidth(5);
         paint.setColor(Color.RED);
 
-        imageWidth = thumbnail.getWidth();
-        imageHeight = thumbnail.getHeight();
+        int imageWidth = thumbnail.getWidth();
+        int imageHeight = thumbnail.getHeight();
+
+        App.getAppData().setImageWidth(imageWidth);
+        App.getAppData().setImageHeight(imageHeight);
         imageView = findViewById(R.id.preview_roi);
         imageView.setImageBitmap(thumbnail);
 
@@ -135,14 +135,9 @@ public class RegionOfInterest extends AppCompatActivity {
         });
 
         buttonNext.setOnClickListener(v -> {
-            Intent videoEditorActivity = new Intent(getApplicationContext(), VideoEditor.class);
-            videoEditorActivity.putExtra(getString(R.string.video_file_path),
-                    inputVideoUri.toString());
-            videoEditorActivity.putExtra(getString(R.string.video_file_path_thumbnail),
-                    thumbnailUri.toString());
-            videoEditorActivity.putExtra(getString(R.string.roi_x), seekBarX.getProgress());
-            videoEditorActivity.putExtra(getString(R.string.roi_y), seekBarY.getProgress());
-            startActivity(videoEditorActivity);
+            App.getAppData().setRoiX(seekBarX.getProgress());
+            App.getAppData().setRoiY(seekBarY.getProgress());
+            startActivity(new Intent(getApplicationContext(), VitalSignSelectorActivity.class));
         });
     }
 

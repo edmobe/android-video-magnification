@@ -8,7 +8,7 @@
     android:gravity="center"
     android:padding="16dp"
 
-    tools:context=".activities.MainActivity">
+    tools:context=".gui.processing.NativeLibManagerActivity">
 
     <TextView
         android:id="@+id/textView3"

@@ -16,17 +16,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VideoMagnification">
-        <activity android:name=".activities.RegionOfInterest" />
-        <activity android:name=".activities.VideoConverter" />
-        <activity android:name=".activities.VideoEditorParameters" />
-        <activity android:name=".activities.VideoEditor" />
-        <activity android:name=".activities.Home">
+        <activity android:name=".gui.interaction.RoiSelectorActivity" />
+        <activity android:name=".gui.input.VideoConverterActivity" />
+        <activity android:name=".gui.interaction.VideoEditorParametersActivity" />
+        <activity android:name=".gui.interaction.VitalSignSelectorActivity" />
+        <activity android:name=".gui.input.HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity">
+        <activity android:name=".gui.processing.NativeLibManagerActivity">
 <!--            <intent-filter>-->
 <!--                <action android:name="android.intent.action.MAIN" />-->
 <!--                <category android:name="android.intent.category.LAUNCHER" />-->

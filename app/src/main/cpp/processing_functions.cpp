@@ -55,7 +55,7 @@ string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string ou
                                         double lambda_c, double fl, double fh, double samplingRate,
                                         double chromAttenuation) {
 
-    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jclass clazz = env->FindClass("com/example/videomagnification/gui/NativeLibManagerActivity");
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -256,7 +256,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
                                          int level, double fl, double fh, int samplingRate,
                                          double chromAttenuation, int roiX, int roiY) {
 
-    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jclass clazz = env->FindClass("com/example/videomagnification/gui/NativeLibManagerActivity");
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -520,7 +520,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                                          double lambda_c, double fl, double fh, int samplingRate,
                                          double chromAttenuation, int roiX, int roiY) {
 
-    jclass clazz = env->FindClass("com/example/videomagnification/activities/MainActivity");
+    jclass clazz = env->FindClass("com/example/videomagnification/gui/NativeLibManagerActivity");
 
     double itime, etime;
     itime = omp_get_wtime();

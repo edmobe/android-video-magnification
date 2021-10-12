@@ -1,10 +1,9 @@
-package com.example.videomagnification.activities;
+package com.example.videomagnification.gui.input;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
@@ -13,15 +12,15 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.example.videomagnification.application.App;
 import com.example.videomagnification.R;
+import com.example.videomagnification.application.App;
 
-public class Home extends AppCompatActivity {
+import org.jetbrains.annotations.NotNull;
 
-    private Button btnOpen;
+public class HomeActivity extends AppCompatActivity {
+
     private static final int REQUEST_PERMISSIONS = 1;
     private static final int PICK_AVI_VIDEO = 2;
-    private Uri inputVideoUri;
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     private boolean arePermissionsGranted() {
@@ -39,7 +38,7 @@ public class Home extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        btnOpen = findViewById(R.id.btn_open);
+        Button btnOpen = findViewById(R.id.btn_open);
         btnOpen.setOnClickListener(v -> {
             if (arePermissionsGranted()) {
                 // You can use the API that requires the permission.
@@ -65,46 +64,40 @@ public class Home extends AppCompatActivity {
                 // The result data contains a URI for the document or directory that
                 // the user selected.
                 if (resultData != null) {
-                    inputVideoUri = resultData.getData();
-                    Intent videoConverterActivity = new Intent(getApplicationContext(),
-                            VideoConverter.class);
-                    videoConverterActivity.putExtra(getString(R.string.video_file_path),
-                            inputVideoUri.toString());
-                    videoConverterActivity.putExtra(getString(R.string.conversion_type), 0);
-                    startActivity(videoConverterActivity);
+                    App.getAppData().setInputVideoUri(resultData.getData());
+                    App.getAppData().setConversionType(0);
+                    startActivity(new Intent(getApplicationContext(),
+                            VideoConverterActivity.class));
                 } else {
-                    ((App)getApplication()).displayShortToast(
+                    App.displayShortToast(
                             "Please select a video file.");
                 }
             } else {
-                ((App)getApplication()).displayShortToast(
+                App.displayShortToast(
                         "Unknown request code: " + requestCode + ".");
             }
 
         } else if (resultCode == 0) {
-            ((App)getApplication()).displayShortToast(
+            App.displayShortToast(
                     "Please select a video file.");
         } else {
-            ((App)getApplication()).displayShortToast(
+            App.displayShortToast(
                     "File opener error. Result code: " + resultCode + ".");
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String @NotNull [] permissions,
+                                           int @NotNull [] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PERMISSIONS:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    videoPicker();
-                } else {
-                    ((App)getApplication()).displayShortToast(
-                            "Error: all the requested permissions are needed.");
-                }
-                return;
+        if (requestCode == REQUEST_PERMISSIONS) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                videoPicker();
+            } else {
+                App.displayShortToast(
+                        "Error: all the requested permissions are needed.");
+            }
         }
     }
 
