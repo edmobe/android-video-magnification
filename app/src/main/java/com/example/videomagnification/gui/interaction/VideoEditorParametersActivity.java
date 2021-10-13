@@ -10,8 +10,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
-import com.example.videomagnification.gui.processing.NativeLibManagerActivity;
 import com.example.videomagnification.application.App;
+import com.example.videomagnification.gui.processing.NativeLibManagerActivity;
 import com.example.videomagnification.utils.seekbar.AccurateSeekBar;
 
 public class VideoEditorParametersActivity extends AppCompatActivity {
@@ -83,18 +83,21 @@ public class VideoEditorParametersActivity extends AppCompatActivity {
 
         // General data
         videoPathTextView = findViewById(R.id.text_video_path);
-        videoPathTextView.setText(App.getAppData().getMp4VideoPath());
+        videoPathTextView.setText(((App) getApplication()).getAppData().getMp4VideoPath());
         extractTextView = findViewById(R.id.text_extract);
-        if (App.getAppData().getSelectedAlgorithmOption() == R.id.radio_gaussian_ideal)
+        if (((App) getApplication()).getAppData().getSelectedAlgorithmOption() ==
+                R.id.radio_gaussian_ideal)
             extractTextView.setText("Heart rate");
-        else if (App.getAppData().getSelectedAlgorithmOption() == R.id.radio_laplacian_butterworth)
+        else if (((App) getApplication()).getAppData().getSelectedAlgorithmOption() ==
+                R.id.radio_laplacian_butterworth)
             extractTextView.setText("Respiratory rate");
         else {
             extractTextView.setText("Unable to get data");
             start.setEnabled(false);
         }
         roiTextView = findViewById(R.id.text_roi);
-        String roi = "X = " + App.getAppData().getRoiX() + " Y = " + App.getAppData().getRoiY();
+        String roi = "X = " + ((App) getApplication()).getAppData().getRoiX() + " Y = " +
+                ((App) getApplication()).getAppData().getRoiY();
         roiTextView.setText(roi);
 
         // Arrays
@@ -139,7 +142,8 @@ public class VideoEditorParametersActivity extends AppCompatActivity {
     }
 
     private void setParametersBasedOnAlgorithm() {
-        int algorithmRadioButtonId = App.getAppData().getSelectedAlgorithmOption();
+        int algorithmRadioButtonId =
+                ((App) getApplication()).getAppData().getSelectedAlgorithmOption();
 
         String spatialFiltering = "";
         String temporalFiltering = "";
@@ -260,15 +264,15 @@ public class VideoEditorParametersActivity extends AppCompatActivity {
 
         start = findViewById(R.id.btn_start);
         start.setOnClickListener(v -> {
-            App.getAppData().setAlpha(getAlpha());
-            App.getAppData().setLambda(getLambda());
-            App.getAppData().setLevel(getLevel());
-            App.getAppData().setFl(getFl());
-            App.getAppData().setFh(getFh());
-            App.getAppData().setSampling(getSampling());
-            App.getAppData().setChromAtt(getChromAtt());
-            App.getAppData().setR1(getR1());
-            App.getAppData().setR2(getR2());
+            ((App) getApplication()).getAppData().setAlpha(getAlpha());
+            ((App) getApplication()).getAppData().setLambda(getLambda());
+            ((App) getApplication()).getAppData().setLevel(getLevel());
+            ((App) getApplication()).getAppData().setFl(getFl());
+            ((App) getApplication()).getAppData().setFh(getFh());
+            ((App) getApplication()).getAppData().setSampling(getSampling());
+            ((App) getApplication()).getAppData().setChromAtt(getChromAtt());
+            ((App) getApplication()).getAppData().setR1(getR1());
+            ((App) getApplication()).getAppData().setR2(getR2());
 
             startActivity(new Intent(getApplicationContext(), NativeLibManagerActivity.class));
         });

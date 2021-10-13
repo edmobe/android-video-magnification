@@ -68,8 +68,8 @@ public class RoiSelectorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_region_of_interest);
 
-        String inputFileName = App.getAppData().getAviVideoPath();
-        String thumbnailFileName = App.getAppData().getCompressedVideoPath();
+        String inputFileName = ((App) getApplication()).getAppData().getAviVideoPath();
+        String thumbnailFileName = ((App) getApplication()).getAppData().getCompressedVideoPath();
 
         inputVideoUri = Uri.parse(inputFileName);
         thumbnailUri = Uri.parse(thumbnailFileName);
@@ -86,8 +86,8 @@ public class RoiSelectorActivity extends AppCompatActivity {
         int imageWidth = thumbnail.getWidth();
         int imageHeight = thumbnail.getHeight();
 
-        App.getAppData().setImageWidth(imageWidth);
-        App.getAppData().setImageHeight(imageHeight);
+        ((App) getApplication()).getAppData().setImageWidth(imageWidth);
+        ((App) getApplication()).getAppData().setImageHeight(imageHeight);
         imageView = findViewById(R.id.preview_roi);
         imageView.setImageBitmap(thumbnail);
 
@@ -135,8 +135,8 @@ public class RoiSelectorActivity extends AppCompatActivity {
         });
 
         buttonNext.setOnClickListener(v -> {
-            App.getAppData().setRoiX(seekBarX.getProgress());
-            App.getAppData().setRoiY(seekBarY.getProgress());
+            ((App) getApplication()).getAppData().setRoiX(seekBarX.getProgress());
+            ((App) getApplication()).getAppData().setRoiY(seekBarY.getProgress());
             startActivity(new Intent(getApplicationContext(), VitalSignSelectorActivity.class));
         });
     }

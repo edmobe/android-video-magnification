@@ -64,24 +64,24 @@ public class HomeActivity extends AppCompatActivity {
                 // The result data contains a URI for the document or directory that
                 // the user selected.
                 if (resultData != null) {
-                    App.getAppData().setInputVideoUri(resultData.getData());
-                    App.getAppData().setConversionType(0);
+                    ((App) getApplication()).getAppData().setInputVideoUri(resultData.getData());
+                    ((App) getApplication()).getAppData().setConversionType(0);
                     startActivity(new Intent(getApplicationContext(),
                             VideoConverterActivity.class));
                 } else {
-                    App.displayShortToast(
+                    ((App) getApplication()).displayShortToast(
                             "Please select a video file.");
                 }
             } else {
-                App.displayShortToast(
+                ((App) getApplication()).displayShortToast(
                         "Unknown request code: " + requestCode + ".");
             }
 
         } else if (resultCode == 0) {
-            App.displayShortToast(
+            ((App) getApplication()).displayShortToast(
                     "Please select a video file.");
         } else {
-            App.displayShortToast(
+            ((App) getApplication()).displayShortToast(
                     "File opener error. Result code: " + resultCode + ".");
         }
     }
@@ -95,7 +95,7 @@ public class HomeActivity extends AppCompatActivity {
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 videoPicker();
             } else {
-                App.displayShortToast(
+                ((App) getApplication()).displayShortToast(
                         "Error: all the requested permissions are needed.");
             }
         }

@@ -1,6 +1,6 @@
 package com.example.videomagnification.utils.conversion;
 
-import android.content.Context;
+import android.app.Activity;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 
@@ -15,14 +15,14 @@ import java.io.File;
 
 public class VideoConverter {
 
-    private Context applicationContext;
+    private Activity context;
 
-    public VideoConverter(Context applicationContext) {
-        this.applicationContext = applicationContext;
+    public VideoConverter(Activity context) {
+        this.context = context;
     }
 
     public void deleteFiles() {
-        File dir = new File(App.getAppData().getVideoDir());
+        File dir = new File(((App) context.getApplication()).getAppData().getVideoDir());
         //Checking the directory exists
         if (!dir.exists())
             return;
@@ -44,17 +44,17 @@ public class VideoConverter {
     }
 
     public boolean createDirectoryIfNeeded() {
-        File outputsFolder = new File(App.getAppData().getVideoDir());
+        File outputsFolder = new File(((App) context.getApplication()).getAppData().getVideoDir());
         if (!outputsFolder.exists()) {
             try {
                 // TODO: ERROR HANDLING
                 outputsFolder.mkdir();
                 App.logDebug("Create directory",
                         "Created directory for the first time: " +
-                                App.getAppData().getVideoDir());
+                                ((App) context.getApplication()).getAppData().getVideoDir());
                 return true;
             } catch (Exception e) {
-                App.displayShortToast(
+                ((App) context.getApplication()).displayShortToast(
                         "Error creating the output video directory!");
                 App.logError(
                         "Native lib", "Error creating the folder: " +
@@ -70,27 +70,27 @@ public class VideoConverter {
     public String convertMp4ToMjpeg(Uri inputVideoUri) {
         // TODO: Error handling
         String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
-                applicationContext, inputVideoUri);
+                context, inputVideoUri);
 
         App.logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
 
 
-        String midVideoPath = App.getAppData().getMjpegVideoPath();
+        String midVideoPath = ((App) context.getApplication()).getAppData().getMjpegVideoPath();
 
         // Compress video
         // TODO: validate that the video is less than 20 seconds long
         // TODO: put conversion in another method
         // TODO: display progress bar to user more accurately
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(applicationContext, inputVideoUri);
+        retriever.setDataSource(context, inputVideoUri);
         int width = Integer.parseInt(
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
         int height = Integer.parseInt(
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
 
         String compressedVideoPath =
-                App.getAppData().getCompressedVideoPath();
+                ((App) context.getApplication()).getAppData().getCompressedVideoPath();
         String scale;
 
         // Compress
@@ -149,7 +149,7 @@ public class VideoConverter {
     public Uri convertMjpegToAvi(String inputVideoPath) {
         // TODO: Error handling
         // TODO: remove conversion files when finished
-        String outputVideoPath = App.getAppData().getAviVideoPath();
+        String outputVideoPath = ((App) context.getApplication()).getAppData().getAviVideoPath();
         FFmpegSession session2 = FFmpegKit.execute(
                 "-y -i " + inputVideoPath + " -q:v 2 -r 30 -vcodec mjpeg " + outputVideoPath);
         App.logDebug(

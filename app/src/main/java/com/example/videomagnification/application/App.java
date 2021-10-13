@@ -7,29 +7,22 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class App extends Application {
 
-    private static AppData appData;
-    private static Context context;
-    // TODO: Define thread count
-    private static ExecutorService executorService = Executors.newCachedThreadPool();
+    private AppData appData;
 
     public void onCreate() {
         super.onCreate();
         appData = new AppData(getContentResolver());
-        App.context = getApplicationContext();
     }
 
-    public static AppData getAppData() { return appData; }
+    public AppData getAppData() { return appData; }
 
-    public static Context getAppContext() {
-        return App.context;
+    public Context getAppContext() {
+        return super.getApplicationContext();
     }
 
-    public static void displayShortToast(String string) {
+    public void displayShortToast(String string) {
         // Run on main loop
         new Handler(Looper.getMainLooper()).post(() -> {
             Toast toast = Toast.makeText(getAppContext(),

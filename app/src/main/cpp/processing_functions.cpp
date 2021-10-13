@@ -520,6 +520,8 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                                          double lambda_c, double fl, double fh, int samplingRate,
                                          double chromAttenuation, int roiX, int roiY) {
 
+    // TODO: Replace false positives
+
     jclass clazz = env->FindClass("com/example/videomagnification/gui/processing/NativeLibManagerActivity");
 
     double itime, etime;

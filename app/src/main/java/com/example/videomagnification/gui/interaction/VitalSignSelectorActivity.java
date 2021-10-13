@@ -26,7 +26,7 @@ public class VitalSignSelectorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_video_editor);
 
         intent = getIntent(); // gets the previously created intent
-        String thumbnailFileName = App.getAppData().getCompressedVideoPath();
+        String thumbnailFileName = ((App) getApplication()).getAppData().getCompressedVideoPath();
 
         MediaMetadataRetriever mMMR = new MediaMetadataRetriever();
         mMMR.setDataSource(getApplicationContext(), Uri.parse(thumbnailFileName));
@@ -45,14 +45,15 @@ public class VitalSignSelectorActivity extends AppCompatActivity {
             int selectedAlgorithmOption = radioGroupAlgorithm.getCheckedRadioButtonId();
 
             if (selectedAlgorithmOption == -1) {
-                App.displayShortToast("Please select an algorithm.");
+                ((App) getApplication()).displayShortToast("Please select an algorithm.");
             } else if (selectedAlgorithmOption == R.id.radio_gaussian_ideal ||
                     selectedAlgorithmOption == R.id.radio_laplacian_butterworth) {
-                App.getAppData().setSelectedAlgorithmOption(selectedAlgorithmOption);
+                ((App) getApplication())
+                        .getAppData().setSelectedAlgorithmOption(selectedAlgorithmOption);
                 startActivity(
                         new Intent(getApplicationContext(), VideoEditorParametersActivity.class));
             } else {
-                App.displayShortToast("Unknown error!");
+                ((App) getApplication()).displayShortToast("Unknown error!");
             }
         });
     }

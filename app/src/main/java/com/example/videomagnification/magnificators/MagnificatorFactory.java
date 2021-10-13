@@ -1,12 +1,20 @@
 package com.example.videomagnification.magnificators;
 
+import android.app.Activity;
+
 import com.example.videomagnification.R;
 import com.example.videomagnification.application.App;
 
 public class MagnificatorFactory {
 
+    private Activity context;
+
+    public MagnificatorFactory(Activity context) {
+        this.context = context;
+    }
+
     public Magnificator createMagnificator() {
-        int algorithmId = App.getAppData().getSelectedAlgorithmOption();
+        int algorithmId = ((App) context.getApplication()).getAppData().getSelectedAlgorithmOption();
         if (algorithmId == R.id.radio_gaussian_ideal) {
             // TODO: Reproduce results for baby2 in S8:
             // 150, 6, 136.8, 163.8, 25.22, 1, 292, 139, heart rate
@@ -14,28 +22,28 @@ public class MagnificatorFactory {
             // Face 2: 150, 6, 1, 1.66, 30, 1, 294, 170
             // Baby: 30, 16, 0.4, 3, 30, 0.1 -----> 24 bpm to 180 bpm
             return new MagnificatorGdownIdeal(
-                    App.getAppData().getAviVideoPath(),
-                    App.getAppData().getVideoDir(),
-                    App.getAppData().getAlpha(),
-                    App.getAppData().getLevel(),
-                    App.getAppData().getFl(),
-                    App.getAppData().getFh(),
-                    App.getAppData().getSampling(),
-                    App.getAppData().getChromAtt(),
-                    App.getAppData().getRoiX(),
-                    App.getAppData().getRoiY());
+                    ((App) context.getApplication()).getAppData().getAviVideoPath(),
+                    ((App) context.getApplication()).getAppData().getVideoDir(),
+                    ((App) context.getApplication()).getAppData().getAlpha(),
+                    ((App) context.getApplication()).getAppData().getLevel(),
+                    ((App) context.getApplication()).getAppData().getFl(),
+                    ((App) context.getApplication()).getAppData().getFh(),
+                    ((App) context.getApplication()).getAppData().getSampling(),
+                    ((App) context.getApplication()).getAppData().getChromAtt(),
+                    ((App) context.getApplication()).getAppData().getRoiX(),
+                    ((App) context.getApplication()).getAppData().getRoiY());
         } else if (algorithmId == R.id.radio_laplacian_butterworth) {
             return new MagnificatorLpyrButter(
-                    App.getAppData().getAviVideoPath(),
-                    App.getAppData().getVideoDir(),
-                    App.getAppData().getAlpha(),
-                    App.getAppData().getLambda(),
-                    App.getAppData().getFl(),
-                    App.getAppData().getFh(),
-                    App.getAppData().getSampling(),
-                    App.getAppData().getChromAtt(),
-                    App.getAppData().getRoiX(),
-                    App.getAppData().getRoiY()
+                    ((App) context.getApplication()).getAppData().getAviVideoPath(),
+                    ((App) context.getApplication()).getAppData().getVideoDir(),
+                    ((App) context.getApplication()).getAppData().getAlpha(),
+                    ((App) context.getApplication()).getAppData().getLambda(),
+                    ((App) context.getApplication()).getAppData().getFl(),
+                    ((App) context.getApplication()).getAppData().getFh(),
+                    ((App) context.getApplication()).getAppData().getSampling(),
+                    ((App) context.getApplication()).getAppData().getChromAtt(),
+                    ((App) context.getApplication()).getAppData().getRoiX(),
+                    ((App) context.getApplication()).getAppData().getRoiY()
             );
         }
         // Unknown algorithm
