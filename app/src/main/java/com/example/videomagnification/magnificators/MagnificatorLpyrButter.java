@@ -30,7 +30,7 @@ public class MagnificatorLpyrButter extends Magnificator {
                                                              double chromAttenuation, int roiX, int roiY);
 
     @Override
-    public String call() {
+    public String magnify() {
         return amplify_spatial_lpry_temporal_butter(
                 videoIn, outDir, alpha, lambdaC, fl, fh, samplingRate, chromAttenuation, roiX, roiY);
     }

@@ -9,5 +9,5 @@ public abstract class Magnificator {
     protected int roiX;
     protected int roiY;
 
-    public abstract String call();
+    public abstract String magnify();
 }

@@ -30,7 +30,7 @@ public class MagnificatorGdownIdeal extends Magnificator {
                                                               int roiX, int roiY);
 
     @Override
-    public String call() {
+    public String magnify() {
         return amplify_spatial_gdown_temporal_ideal(
                 videoIn, outDir, alpha, level, fl, fh, samplingRate, chromAttenuation, roiX, roiY);
     }
