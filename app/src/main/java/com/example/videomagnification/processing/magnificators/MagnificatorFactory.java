@@ -62,12 +62,12 @@ public class MagnificatorFactory {
                     ((App) context.getApplication()).getAppData().getVideoDir(),
                     30,
                     16,
-                    0.4,
-                    3,
+                    1.0 / 3.0,
+                    8.0 / 6.0,
                     30,
                     0.1,
-                    ((App) context.getApplication()).getAppData().getRoiX(),
-                    ((App) context.getApplication()).getAppData().getRoiY()
+                    325,
+                    140
             );
         }
         // Unknown algorithm

@@ -46,8 +46,10 @@ constexpr ld INFLUENCE = 1;
 *
 * Copyright(c) 2021 Tecnologico de Costa Rica.
 *
-* Authors: Eduardo Moya Bello, Ki - Sung Lim
-* Date : April 2021
+* BPM calculation author: Eduardo Moya Bello
+*
+* Optimization authors: Eduardo Moya Bello, Ki - Sung Lim
+* Date: April 2021
 *
 * This work was based on a project EVM
 *
@@ -63,6 +65,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
                                          double chromAttenuation, int roiX, int roiY) {
 
     jclass clazz = env->FindClass("com/example/videomagnification/gui/processing/NativeLibManagerActivity");
+    updateProgress(env, 0);
 
     double itime, etime;
     itime = omp_get_wtime();
@@ -70,7 +73,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     /*
      * ================= VIDEO RECEPTION =================
      * */
-
     logDebugAndShowUser(env, "Video reception", "Extracting video data");
 
     string name;
@@ -103,7 +105,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
         updateProgress(env, 100);
         return "error";
     }
-    
+
 
     // Extracting video info
     int vidHeight = (int)video.get(CAP_PROP_FRAME_HEIGHT);
@@ -125,7 +127,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     logDebug("Video reception - Video info (Width)", to_string(vidWidth));
     logDebug("Video reception - Video info (FPS)", to_string(fr));
 
-    updateProgress(env, 5);
+    updateProgress(env, 15);
 
     /*
      * ================= SPATIAL FILTERING =================
@@ -133,7 +135,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
     vector<Mat> Gdown_stack = build_GDown_stack(env, inFile, startIndex, endIndex, level);
 
-    updateProgress(env, 15);
+    updateProgress(env, 40);
     logDebug("Spatial processing - GDown stack", "Finished building!");
 
     /*
@@ -167,15 +169,21 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
         Gdown_stack[i] = frame;
     }
 
-    int progress = 0;
+    updateProgress(env, 80);
+
+    float progress = 0;
 
     // BPM EXTRACTION DATA
-    const int CHUNK_SIZE = 2 * fr; // Every 2 seconds
+    const int CHUNK_SIZE = 2 * fr; // Every 2 seconds display the BPM
     vector<ld> heartRateData;
     heartRateData.reserve(endIndex);
 
-// #pragma omp parallel for default(none) shared(startIndex, endIndex, video, Gdown_stack, filtered_stack, vidWidth, vidHeight, roiX, roiY, heartRateData)
     for (int i = startIndex; i < endIndex; i++) {
+
+        progress = (float) i / (float) endIndex;
+
+        logDebugAndShowUser(env, "Video output", "Reconstructing frame " +
+        to_string(i + 1) + " of " + to_string(endIndex));
 
         Mat frame, rgbframe, d_frame, ntscframe, filt_ind, filtered, out_frame;
         // Capture frame-by-frame
@@ -205,6 +213,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
         Mat croppedFrame = cropFrame(out_frame, roiX, roiY);
         ld predominantColor = getPredominantRedColor(croppedFrame);
         heartRateData.push_back(predominantColor);
+
+        updateProgress(env, 80 + 10 * progress);
     }
 
     updateProgress(env, 90);
@@ -213,57 +223,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     unordered_map<string, vector<ld>> peakFindingOutput =
             z_score_thresholding(heartRateData, LAG, THRESHOLD, INFLUENCE);
     vector<ld> signals = peakFindingOutput["signals"];
-    vector<int> peakIndexes = {};
-    vector<int> chunkIndexes = {};
-    vector<double> bpmVector = {};
 
-    // First frame
-    printIndicator(filtered_stack[0], vidWidth, false);
-
-    // Given N chunks in peakIndexes = [ CHUNK 1 | CHUNK 2 | ... | CHUNK N]
-    for (int i = 1; i < signals.size(); i++) {
-        // Finished chunk
-        if (i % CHUNK_SIZE == 0) {
-            double diff = 0;
-            int diffCount = 0;
-            // Get chunk differences
-            if (chunkIndexes.size() > 1) {
-                bpmVector.push_back(calculateAverageBpm(chunkIndexes, fr, fh, fl));
-                chunkIndexes.clear();
-            } else {
-                // Use last BPM
-                bpmVector.push_back(bpmVector[bpmVector.size() - 1]);
-            }
-        }
-
-        // Positive edge found
-        if (signals[i - 1] <= 0 && signals[i] == 1) {
-            peakIndexes.push_back(i);
-            chunkIndexes.push_back(i);
-            // Print heart rate indicator for 5 frames
-            for (int j = i; j < i + 5; j++) {
-                if (j <= signals.size())
-                    printIndicator(filtered_stack[j - 1], vidWidth, true);
-            }
-        } else {
-            printIndicator(filtered_stack[i], vidWidth, false);
-        }
-
-    }
-
-    // For last chunk
-    if (chunkIndexes.size() > 1) {
-        double diff = 0;
-        int diffCount = 0;
-        // Get chunk differences
-        if (chunkIndexes.size() > 1) {
-            bpmVector.push_back(calculateAverageBpm(chunkIndexes, fr, fh, fl));
-            chunkIndexes.clear();
-        } else {
-            // Use last BPM
-            bpmVector.push_back(bpmVector[bpmVector.size() - 1]);
-        }
-    }
 
     string bpmText;
     int indicator_counter = 0;
@@ -279,11 +239,15 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
         // New positive edge
         if (signals[i - 1] <= 0 && signals[i] == 1) {
+            indicator_counter = INDICATOR_LEN;
             if (nSamples) {
                 double currBpm = 60.0 * fr / (i - lastBpmIndex);
                 // False positive
-                if (currBpm < fl * 60 || currBpm > fh * 60)
+                if (currBpm < fl * 60 || currBpm > fh * 60) {
                     currBpm = bpm;
+                    indicator_counter = 0;
+                }
+
                 if (avgReady) {
                     // Using exponential moving average
                     bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
@@ -295,7 +259,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
             }
             nSamples++;
             lastBpmIndex = i;
-            indicator_counter = INDICATOR_LEN;
         }
 
         if (i % CHUNK_SIZE == 0) {
@@ -345,8 +308,10 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 *
 * Copyright(c) 2021 Tecnologico de Costa Rica.
 *
-* Authors: Eduardo Moya Bello, Ki - Sung Lim
-* Date : April 2021
+* BPM calculation author: Eduardo Moya Bello
+*
+* Optimization authors: Eduardo Moya Bello, Ki - Sung Lim
+* Date: April 2021
 *
 * This work was based on a project EVM
 *
@@ -360,8 +325,6 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string outDir, double alpha,
                                          double lambda_c, double fl, double fh, int samplingRate,
                                          double chromAttenuation, int roiX, int roiY) {
-
-    // TODO: Replace false positives
 
     jclass clazz = env->FindClass("com/example/videomagnification/gui/processing/NativeLibManagerActivity");
 
@@ -540,7 +503,6 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
         // Storing computed Laplacian pyramid as previous pyramid
         pyr_prev = pyr;
-        //}
 
         // Amplify each spatial frecuency bands according to Figure 6 of our (EVM project) paper
 
@@ -556,7 +518,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
 #pragma omp parallel for default(none) shared(nLevels, filtered, alpha, exaggeration_factor, delta, lambda)
         for (int l = nLevels - 1; l >= 0; l--) {
-            // go one level down on pyramid each stage
+            // Go one level down on pyramid each stage
 
             // Compute modified alpha for this level
             double currAlpha = lambda / delta / 8.0f - 1.0f;
@@ -604,7 +566,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
         findContours(mask, contours, RETR_TREE, CHAIN_APPROX_SIMPLE);
         contoursCount.push_back(0);
 
-#pragma omp parallel for shared(contours, contoursCount)
+#pragma omp parallel for default(none) shared(i, contours, contoursCount)
         for (int cnt = 0; cnt < contours.size(); cnt++) {
             double area = contourArea(contours[cnt]);
             if (area > 100)
@@ -621,41 +583,9 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
     // BPM PROCESSING
     double bpm = 0;
-    int totalPeakCount = 0;
-    const int CHUNK_SIZE = 2 * fr; // Every 5 seconds
-    unsigned int chunkCount = 1 + endIndex / CHUNK_SIZE; // Total chunks
+    const int CHUNK_SIZE = 2 * fr; // Every 2 seconds dislpay the BPM
     vector<bool> signal;
-    vector<int> peakIndexes;
-    vector<vector<int>> peakIndexesByChunk;
-    vector<double> bpmValues;
     signal.reserve(endIndex);
-    peakIndexes.reserve(CHUNK_SIZE);
-    peakIndexesByChunk.reserve(chunkCount);
-    bpmValues.reserve(chunkCount);
-
-    for (int i = 1; i < contoursCount.size(); i++) {
-        if (i % CHUNK_SIZE == 0) {
-            // Finished chunk
-            peakIndexesByChunk.push_back(peakIndexes);
-            peakIndexes.clear();
-        }
-        if (contoursCount[i - 1] == 0 && contoursCount[i] >= 1) {
-            signal.push_back(true);
-            peakIndexes.push_back(i);
-            totalPeakCount++;
-        } else {
-            signal.push_back(false);
-        }
-    }
-
-    if(!peakIndexes.empty()) {
-        peakIndexesByChunk.push_back(peakIndexes);
-    }
-
-    if (totalPeakCount == 0) {
-        // No peaks found!
-        return "error";
-    }
 
 
     VideoCapture videoMidRead(midName);
@@ -677,11 +607,15 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
         if (i >= 1) {
             // New positive edge
             if (contoursCount[i] && !contoursCount[i - 1]) {
+                indicator_counter = INDICATOR_LEN;
                 if (nSamples) {
                     double currBpm = 60.0 * fr / (i - lastBpmIndex);
                     // False positive
-                    if (currBpm < fl * 60 || currBpm > fh * 60)
+                    if (currBpm < fl * 60 || currBpm > fh * 60) {
                         currBpm = bpm;
+                        indicator_counter = 0;
+                    }
+
                     if (avgReady) {
                         // Using exponential moving average
                         bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
@@ -693,7 +627,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                 }
                 nSamples++;
                 lastBpmIndex = i;
-                indicator_counter = INDICATOR_LEN;
+
             }
         }
 
