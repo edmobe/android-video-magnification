@@ -32,7 +32,13 @@ using namespace cv;
 extern "C" int butter_coeff(int, int, double, double);
 
 constexpr auto MAX_FILTER_SIZE = 5;
-constexpr auto BAR_WIDTH = 70;
+
+// Statistical constants
+constexpr double AVG_ALPHA = 0.3;
+constexpr int INDICATOR_LEN = 5;
+constexpr int LAG = 10;
+constexpr ld THRESHOLD = 0;
+constexpr ld INFLUENCE = 1;
 
 /**
 * Spatial Filtering : Gaussian blurand down sample
@@ -163,7 +169,12 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
     int progress = 0;
 
-#pragma omp parallel for default(none) shared(startIndex, endIndex, video, Gdown_stack, filtered_stack, vidWidth, vidHeight)
+    // BPM EXTRACTION DATA
+    const int CHUNK_SIZE = 2 * fr; // Every 2 seconds
+    vector<ld> heartRateData;
+    heartRateData.reserve(endIndex);
+
+// #pragma omp parallel for default(none) shared(startIndex, endIndex, video, Gdown_stack, filtered_stack, vidWidth, vidHeight, roiX, roiY, heartRateData)
     for (int i = startIndex; i < endIndex; i++) {
 
         Mat frame, rgbframe, d_frame, ntscframe, filt_ind, filtered, out_frame;
@@ -183,36 +194,24 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
         frame = ntsc2rgb(filt_ind);
 
-        threshold(frame, out_frame, 0.0f, 0.0f, THRESH_TOZERO);
-        threshold(out_frame, frame, 1.0f, 1.0f, THRESH_TRUNC);
+        cv::threshold(frame, out_frame, 0.0f, 0.0f, THRESH_TOZERO);
+        cv::threshold(out_frame, frame, 1.0f, 1.0f, THRESH_TRUNC);
 
         rgbframe = im2uint8(frame);
 
         cvtColor(rgbframe, out_frame, COLOR_RGB2BGR);
 
         filtered_stack[i] = out_frame.clone();
-    }
-
-    updateProgress(env, 90);
-
-    // BPM EXTRACTION DATA
-    const int CHUNK_SIZE = 5 * fr; // Every 5 seconds
-    const int lag = 5;
-    const ld threshold = 1.0;
-    const ld influence = 0.9;
-    vector<ld> heartRateData;
-    heartRateData.reserve(endIndex);
-    string bpmText = "Calculating BPM...";
-
-    for (int i = startIndex; i < endIndex; i++) {
-        Mat croppedFrame = cropFrame(filtered_stack[i], roiX, roiY);
+        Mat croppedFrame = cropFrame(out_frame, roiX, roiY);
         ld predominantColor = getPredominantRedColor(croppedFrame);
         heartRateData.push_back(predominantColor);
     }
 
+    updateProgress(env, 90);
+
     // COMPUTE PEAK FINDING ALGORITHM
     unordered_map<string, vector<ld>> peakFindingOutput =
-            z_score_thresholding(heartRateData, lag, threshold, influence);
+            z_score_thresholding(heartRateData, LAG, THRESHOLD, INFLUENCE);
     vector<ld> signals = peakFindingOutput["signals"];
     vector<int> peakIndexes = {};
     vector<int> chunkIndexes = {};
@@ -266,11 +265,51 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
         }
     }
 
+    string bpmText;
+    int indicator_counter = 0;
+
+    int nSamples = 0;
+    bool avgReady = false;
+    int lastBpmIndex = 0;
+    double bpm = 0;
+    double lastBpm = 0;
+
     for (int i = startIndex; i < endIndex; i++) {
-        // Print BPM every N frames
+        progress = (float) i / (float) endIndex;
+
+        // New positive edge
+        if (signals[i - 1] <= 0 && signals[i] == 1) {
+            if (nSamples) {
+                double currBpm = 60.0 * fr / (i - lastBpmIndex);
+                // False positive
+                if (currBpm < fl * 60 || currBpm > fh * 60)
+                    currBpm = bpm;
+                if (avgReady) {
+                    // Using exponential moving average
+                    bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
+                    lastBpm = bpm;
+                } else {
+                    bpm = currBpm;
+                    avgReady = true;
+                }
+            }
+            nSamples++;
+            lastBpmIndex = i;
+            indicator_counter = INDICATOR_LEN;
+        }
+
         if (i % CHUNK_SIZE == 0) {
-            int index = i / CHUNK_SIZE;
-            bpmText = "BPM: " + to_string(bpmVector[index]);
+            bpm == 0 ? bpmText = "Calculating..." : bpmText = "BPM: " + to_string(bpm);
+        }
+
+        logDebugAndShowUser(env, "Video output", "Writing frame " + to_string(i) +
+                                                 " of " + to_string(endIndex - 2));
+
+        if (indicator_counter > 0) {
+            printIndicator(filtered_stack[i], vidWidth, true);
+            indicator_counter--;
+        } else {
+            printIndicator(filtered_stack[i], vidWidth, false);
         }
 
         putText(filtered_stack[i], bpmText, Point(32, 32),
@@ -283,6 +322,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
         // Write the frame into the file 'outcpp.avi'
         videoOut.write(filtered_stack[i]);
+        updateProgress(env, 90 + 10 * progress);
     }
 
     // When everything done, release the video capture and write object
@@ -582,7 +622,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     // BPM PROCESSING
     double bpm = 0;
     int totalPeakCount = 0;
-    const int CHUNK_SIZE = 5 * fr; // Every 5 seconds
+    const int CHUNK_SIZE = 2 * fr; // Every 5 seconds
     unsigned int chunkCount = 1 + endIndex / CHUNK_SIZE; // Total chunks
     vector<bool> signal;
     vector<int> peakIndexes;
@@ -623,14 +663,12 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                               Size(vidWidth, vidHeight));
 
     string bpmText;
-    int INDICATOR_LEN = 5;
     int indicator_counter = 0;
 
     int nSamples = 0;
     bool avgReady = false;
     int lastBpmIndex = 0;
     double lastBpm = 0;
-    double AVG_ALPHA = 0.5;
 
     for (int i = startIndex; i < endIndex - 1; i++) {
 
@@ -641,6 +679,9 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
             if (contoursCount[i] && !contoursCount[i - 1]) {
                 if (nSamples) {
                     double currBpm = 60.0 * fr / (i - lastBpmIndex);
+                    // False positive
+                    if (currBpm < fl * 60 || currBpm > fh * 60)
+                        currBpm = bpm;
                     if (avgReady) {
                         // Using exponential moving average
                         bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
@@ -655,7 +696,6 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                 indicator_counter = INDICATOR_LEN;
             }
         }
-
 
         if (i % CHUNK_SIZE == 0) {
             bpm == 0 ? bpmText = "Calculating..." : bpmText = "BPM: " + to_string(bpm);
