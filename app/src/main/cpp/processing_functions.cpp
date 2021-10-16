@@ -34,7 +34,7 @@ extern "C" int butter_coeff(int, int, double, double);
 constexpr auto MAX_FILTER_SIZE = 5;
 
 // Statistical constants
-constexpr double AVG_ALPHA = 0.05;
+constexpr double AVG_ALPHA = 0.01;
 constexpr int INDICATOR_LEN = 5;
 constexpr int LAG = 10;
 constexpr ld THRESHOLD = 0;
@@ -239,23 +239,24 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
 
         // New positive edge
         if (signals[i - 1] <= 0 && signals[i] == 1) {
-            indicator_counter = INDICATOR_LEN;
             if (nSamples) {
                 double currBpm = 60.0 * fr / (i - lastBpmIndex);
                 // False positive
                 if (currBpm < fl * 60 || currBpm > fh * 60) {
-                    currBpm = bpm;
-                    indicator_counter = 0;
-                }
-
-                if (avgReady) {
-                    // Using exponential moving average
-                    bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
-                    lastBpm = bpm;
+                    nSamples--;
                 } else {
-                    bpm = currBpm;
-                    avgReady = true;
+                    indicator_counter = INDICATOR_LEN;
+                    if (avgReady) {
+                        // Using exponential moving average
+                        bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
+                        lastBpm = bpm;
+                    } else {
+                        bpm = currBpm;
+                        avgReady = true;
+                    }
                 }
+            } else {
+                indicator_counter = INDICATOR_LEN;
             }
             nSamples++;
             lastBpmIndex = i;
@@ -607,27 +608,27 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
         if (i >= 1) {
             // New positive edge
             if (contoursCount[i] && !contoursCount[i - 1]) {
-                indicator_counter = INDICATOR_LEN;
                 if (nSamples) {
                     double currBpm = 60.0 * fr / (i - lastBpmIndex);
                     // False positive
                     if (currBpm < fl * 60 || currBpm > fh * 60) {
-                        currBpm = bpm;
-                        indicator_counter = 0;
-                    }
-
-                    if (avgReady) {
-                        // Using exponential moving average
-                        bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
-                        lastBpm = bpm;
+                        nSamples--;
                     } else {
-                        bpm = currBpm;
-                        avgReady = true;
+                        indicator_counter = INDICATOR_LEN;
+                        if (avgReady) {
+                            // Using exponential moving average
+                            bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
+                            lastBpm = bpm;
+                        } else {
+                            bpm = currBpm;
+                            avgReady = true;
+                        }
                     }
+                } else {
+                    indicator_counter = INDICATOR_LEN;
                 }
                 nSamples++;
                 lastBpmIndex = i;
-
             }
         }
 

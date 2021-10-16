@@ -32,7 +32,7 @@ public class MagnificatorFactory {
 //                    ((App) context.getApplication()).getAppData().getChromAtt(),
 //                    ((App) context.getApplication()).getAppData().getRoiX(),
 //                    ((App) context.getApplication()).getAppData().getRoiY());
-            // TEST 1
+//            // TEST 1
             return new MagnificatorGdownIdeal(
                     ((App) context.getApplication()).getAppData().getAviVideoPath(),
                     ((App) context.getApplication()).getAppData().getVideoDir(),
@@ -44,6 +44,18 @@ public class MagnificatorFactory {
                     1,
                     128,
                     15);
+            // TEST 2
+//            return new MagnificatorGdownIdeal(
+//                    ((App) context.getApplication()).getAppData().getAviVideoPath(),
+//                    ((App) context.getApplication()).getAppData().getVideoDir(),
+//                    150,
+//                    6,
+//                    8.0/6.0,
+//                    9.0/6.0,
+//                    30,
+//                    1,
+//                    128,
+//                    15);
         } else if (algorithmId == R.id.radio_laplacian_butterworth) {
 //            return new MagnificatorLpyrButter(
 //                    ((App) context.getApplication()).getAppData().getAviVideoPath(),
