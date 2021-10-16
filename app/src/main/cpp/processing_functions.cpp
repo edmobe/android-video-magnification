@@ -34,7 +34,7 @@ extern "C" int butter_coeff(int, int, double, double);
 constexpr auto MAX_FILTER_SIZE = 5;
 
 // Statistical constants
-constexpr double AVG_ALPHA = 0.3;
+constexpr double AVG_ALPHA = 0.05;
 constexpr int INDICATOR_LEN = 5;
 constexpr int LAG = 10;
 constexpr ld THRESHOLD = 0;
