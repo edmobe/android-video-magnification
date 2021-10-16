@@ -1,12 +1,8 @@
-package com.example.videomagnification.magnificators;
+package com.example.videomagnification.processing.magnificators;
 
 public class MagnificatorLpyrButter extends Magnificator {
 
-    double lambdaC;
-    double fl;
-    double fh;
-    double samplingRate;
-    double chromAttenuation;
+    private double lambdaC;
 
     public MagnificatorLpyrButter(String videoIn, String outDir,
                                  double alpha, double lambdaC,

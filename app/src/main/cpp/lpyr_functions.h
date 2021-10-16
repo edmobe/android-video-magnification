@@ -5,6 +5,13 @@
 using namespace std;
 using namespace cv;
 
+struct bpmValues {
+    vector<char> signal;
+    vector<double> bpm;
+};
+
+bpmValues getBpmValues(vector<char> contourList, int fr, int secondsToUpdate);
+
 int maxPyrHt(int frameWidth, int frameHeight, int filterSizeX, int filterSizeY);
 
 vector<Mat> buildLpyrfromGauss(Mat image, int levels);

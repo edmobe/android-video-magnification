@@ -1,4 +1,4 @@
-package com.example.videomagnification.magnificators;
+package com.example.videomagnification.processing.magnificators;
 
 import android.app.Activity;
 import android.os.AsyncTask;

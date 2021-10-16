@@ -1,10 +1,8 @@
-package com.example.videomagnification.magnificators;
+package com.example.videomagnification.processing.magnificators;
 
 public class MagnificatorGdownIdeal extends Magnificator {
 
-    int level;
-    double fl;
-    double fh;
+    private int level;
 
     public MagnificatorGdownIdeal(String videoIn, String outDir,
                                   double alpha, int level,

@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
 import com.example.videomagnification.application.App;
-import com.example.videomagnification.utils.conversion.ConversionTask;
+import com.example.videomagnification.processing.conversion.ConversionTask;
 
 
 public class VideoConverterActivity extends AppCompatActivity {

@@ -1,4 +1,4 @@
-package com.example.videomagnification.magnificators;
+package com.example.videomagnification.processing.magnificators;
 
 import android.app.Activity;
 
@@ -33,15 +33,27 @@ public class MagnificatorFactory {
                     ((App) context.getApplication()).getAppData().getRoiX(),
                     ((App) context.getApplication()).getAppData().getRoiY());
         } else if (algorithmId == R.id.radio_laplacian_butterworth) {
+//            return new MagnificatorLpyrButter(
+//                    ((App) context.getApplication()).getAppData().getAviVideoPath(),
+//                    ((App) context.getApplication()).getAppData().getVideoDir(),
+//                    ((App) context.getApplication()).getAppData().getAlpha(),
+//                    ((App) context.getApplication()).getAppData().getLambda(),
+//                    ((App) context.getApplication()).getAppData().getFl(),
+//                    ((App) context.getApplication()).getAppData().getFh(),
+//                    ((App) context.getApplication()).getAppData().getSampling(),
+//                    ((App) context.getApplication()).getAppData().getChromAtt(),
+//                    ((App) context.getApplication()).getAppData().getRoiX(),
+//                    ((App) context.getApplication()).getAppData().getRoiY()
+//            );
             return new MagnificatorLpyrButter(
                     ((App) context.getApplication()).getAppData().getAviVideoPath(),
                     ((App) context.getApplication()).getAppData().getVideoDir(),
-                    ((App) context.getApplication()).getAppData().getAlpha(),
-                    ((App) context.getApplication()).getAppData().getLambda(),
-                    ((App) context.getApplication()).getAppData().getFl(),
-                    ((App) context.getApplication()).getAppData().getFh(),
-                    ((App) context.getApplication()).getAppData().getSampling(),
-                    ((App) context.getApplication()).getAppData().getChromAtt(),
+                    30,
+                    16,
+                    0.4,
+                    3,
+                    30,
+                    0.1,
                     ((App) context.getApplication()).getAppData().getRoiX(),
                     ((App) context.getApplication()).getAppData().getRoiY()
             );

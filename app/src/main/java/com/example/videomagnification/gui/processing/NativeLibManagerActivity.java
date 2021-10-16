@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.videomagnification.R;
 import com.example.videomagnification.databinding.ActivityMainBinding;
 import com.example.videomagnification.gui.input.VideoConverterActivity;
-import com.example.videomagnification.magnificators.MagnificationTask;
+import com.example.videomagnification.processing.magnificators.MagnificationTask;
 
 public class NativeLibManagerActivity extends AppCompatActivity {
     // Used to load the 'native-lib' library on application startup.

@@ -307,3 +307,51 @@ vector<vector<Mat>> ideal_bandpassing_lpyr(JNIEnv *env, vector<vector<Mat>>& inp
 
     return filtered;
 }
+
+bpmValues getBpmValues(vector<char> contourList, int fr, int secondsToUpdate) {
+    double factor = fr * 60;
+    int keyFrameCount = 0;
+    int lastImpulseIndex = 0;
+    double currBpm = 0;
+    int bpmSampleCount = 0;
+    double averageBpm = 0;
+
+    bpmValues result;
+    result.bpm.reserve(contourList.size());
+    result.signal.reserve(contourList.size());
+
+    secondsToUpdate *= fr;
+
+    if (secondsToUpdate < 1) {
+        secondsToUpdate = 1;
+    }
+
+    // First frame
+    result.signal.push_back(contourList[0]);
+    result.bpm.push_back(0);
+
+    for (int i = 1; i <= contourList.size() - 1; i++) {
+        // Time to update the BPM
+        if (bpmSampleCount > 0 && i % secondsToUpdate == 0) {
+            averageBpm = currBpm / bpmSampleCount;
+            bpmSampleCount = 0;
+        }
+        // POSEDGE
+        if (!contourList[i - 1] && contourList[i]) {
+            result.signal.push_back(contourList[i]);
+            // This is not the first BPM calculation
+            if (keyFrameCount > 0) {
+                currBpm += factor / (i - lastImpulseIndex);
+                bpmSampleCount++;
+            }
+            lastImpulseIndex = i;
+            keyFrameCount++;
+        } else {
+            result.signal.push_back(0);
+        }
+        result.bpm.push_back(averageBpm);
+    }
+
+    return result;
+}
+

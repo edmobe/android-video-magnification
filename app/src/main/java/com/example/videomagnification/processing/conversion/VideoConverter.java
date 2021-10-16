@@ -1,4 +1,4 @@
-package com.example.videomagnification.utils.conversion;
+package com.example.videomagnification.processing.conversion;
 
 import android.app.Activity;
 import android.media.MediaMetadataRetriever;

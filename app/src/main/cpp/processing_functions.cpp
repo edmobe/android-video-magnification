@@ -20,6 +20,7 @@
 #include "vector_functions.h"
 #include "PeakFinder.h"
 
+
 extern "C" {
 #include "ellf.h"
 }
@@ -32,207 +33,6 @@ extern "C" int butter_coeff(int, int, double, double);
 
 constexpr auto MAX_FILTER_SIZE = 5;
 constexpr auto BAR_WIDTH = 70;
-
-/**
-* Spatial Filtering : Laplacian pyramid
-* Temporal Filtering : Ideal bandpass
-*
-* Copyright(c) 2021 Tecnologico de Costa Rica.
-*
-* Authors: Eduardo Moya Bello, Ki - Sung Lim
-* Date : June 2021
-*
-* This work was based on a project EVM
-*
-* Original copyright(c) 2011 - 2012 Massachusetts Institute of Technology,
-* Quanta Research Cambridge, Inc.
-*
-* Original authors : Hao - yu Wu, Michael Rubinstein, Eugene Shih,
-* License : Please refer to the LICENCE file (MIT license)
-* Original date : June 2012
-*/
-string amplify_spatial_lpyr_temporal_ideal(JNIEnv *env, string inFile, string outDir, double alpha,
-                                        double lambda_c, double fl, double fh, double samplingRate,
-                                        double chromAttenuation) {
-
-    jclass clazz = env->FindClass("com/example/videomagnification/gui/processing/NativeLibManagerActivity");
-
-    double itime, etime;
-    itime = omp_get_wtime();
-
-    /*
-     * ================= VIDEO RECEPTION =================
-     * */
-
-    logDebugAndShowUser(env, "Video reception", "Extracting video data");
-
-    string name;
-    string delimiter = "/";
-
-    size_t last = 0; size_t next = 0;
-    while ((next = inFile.find(delimiter, last)) != string::npos) {
-        last = next + 1;
-    }
-
-    name = inFile.substr(last);
-    name = name.substr(0, name.find("."));
-
-    // Creates the result video name
-    string outName = outDir + name + "-ideal-from-" + to_string(fl) + "-to-" +
-                     to_string(fh) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
-                     "-chromAtn-" + to_string(chromAttenuation) + ".mp4";
-
-    logDebug("Video reception - Output file", outName);
-
-    // Create a VideoCapture object and open the input file
-    // If the input is the web camera, pass 0 instead of the video file name
-    //VideoCapture video(0);
-    VideoCapture video(inFile);
-
-    // Check if video opened successfully
-
-    if (!video.isOpened()) {
-        logDebugAndShowUser(env, "Video reception", "Error opening video stream or file");
-        updateProgress(env, 100);
-        return "error";
-    }
-
-    // Extract video info
-    int len = (int)video.get(CAP_PROP_FRAME_COUNT);
-    int startIndex = 0;
-    int endIndex = len - 10;
-    int vidHeight = (int)video.get(CAP_PROP_FRAME_HEIGHT);
-    int vidWidth = (int)video.get(CAP_PROP_FRAME_WIDTH);
-    int fr = (int)video.get(CAP_PROP_FPS);
-
-    // Compute maximum pyramid height for every frame
-    int max_ht = 1 + maxPyrHt(vidWidth, vidHeight, MAX_FILTER_SIZE, MAX_FILTER_SIZE);
-
-    logDebug("Video reception - Video info (len)", to_string(len));
-    logDebug("Video reception - Video info (Start index)", to_string(startIndex));
-    logDebug("Video reception - Video info (End index)", to_string(endIndex));
-    logDebug("Video reception - Video info (Height)", to_string(vidHeight));
-    logDebug("Video reception - Video info (Width)", to_string(vidWidth));
-    logDebug("Video reception - Video info (FPS)", to_string(fr));
-    logDebug("Video reception - Maximum pyramid height", to_string(max_ht));
-
-    updateProgress(env, 5);
-
-    /*
-     * ================= SPATIAL PROCESSING =================
-     * */
-
-    vector<vector<Mat>> pyr_stack = build_Lpyr_stack(env, inFile, startIndex, endIndex);
-
-    updateProgress(env, 15);
-    logDebug("Spatial processing - LPYR stack", "Finished building!");
-
-    /*
-     * ================= TEMPORAL PROCESSING =================
-     * */
-    vector<vector<Mat>> filteredStack = ideal_bandpassing_lpyr(env, pyr_stack, 3, fl, fh,
-                                                               samplingRate);
-
-    updateProgress(env, 70);
-    logDebugAndShowUser(env, "Video output",
-                        "Preparing output video");
-
-    /*
-     * ================= VIDEO OUTPUT =================
-     * */
-
-    // Render on the input video to make the output video
-    // Define the codec and create VideoWriter object
-    VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
-                         Size(vidWidth, vidHeight));
-
-    Scalar colorAmp(alpha, alpha * chromAttenuation, alpha * chromAttenuation);
-
-    // Amplify color channels in NTSC
-#pragma omp parallel for shared(filteredStack, colorAmp)
-    for (int frame = 0; frame < filteredStack.size(); frame++) {
-#pragma omp parallel for shared(filteredStack, colorAmp)
-        for (int levelFrame = 0; levelFrame < filteredStack[frame].size(); levelFrame++) {
-            multiply(filteredStack[frame][levelFrame], colorAmp, filteredStack[frame][levelFrame]);
-        }
-    }
-
-    int k = 0;
-
-    int progress = 0;
-
-    for (int i = startIndex; i < endIndex; i++) {
-        logDebugAndShowUser(env, "Video output", "Processing " + inFile);
-
-        Mat frame, rgbframe, ntscframe, filt_ind, filtered, out_frame;
-        // Capture frame-by-frame
-        video >> frame;
-
-        // Color conversion GBR 2 NTSC
-        cvtColor(frame, rgbframe, COLOR_BGR2RGB);
-        rgbframe = im2double(rgbframe);
-        ntscframe = rgb2ntsc(rgbframe);
-
-        //imshow("Converted", ntscframe);
-
-        filt_ind = filteredStack[k][0];
-        //imshow("Filtered stack", filt_ind);
-
-        Size img_size(vidWidth, vidHeight);//the dst image size,e.g.100x100
-        resize(filt_ind, filtered, img_size, 0, 0, INTER_CUBIC);//resize image
-
-        filtered = filtered + ntscframe;
-        //imshow("Filtered", filtered);
-
-        frame = ntsc2rgb(filtered);
-        //imshow("Frame", frame);
-
-#pragma omp parallel for
-        for (int x = 0; x < frame.rows; x++) {
-            for (int y = 0; y < frame.cols; y++) {
-                Vec3d this_pixel = frame.at<Vec3d>(x, y);
-                for (int z = 0; z < 3; z++) {
-                    if (this_pixel[z] > 1) {
-                        this_pixel[z] = 1;
-                    }
-
-                    if (this_pixel[z] < 0) {
-                        this_pixel[z] = 0;
-                    }
-                }
-
-                frame.at<Vec3d>(x, y) = this_pixel;
-            }
-        }
-
-        rgbframe = im2uint8(frame);
-        //imshow("Rgb frame", rgbframe);
-
-        cvtColor(rgbframe, out_frame, COLOR_RGB2BGR);
-        //imshow("Out frame", out_frame);
-
-        // Write the frame into the output file
-        videoOut.write(out_frame);
-
-        progress = 20 * (i + 1) / endIndex;
-
-        updateProgress(env, 70 + progress);
-
-        k++;
-    }
-
-    etime = omp_get_wtime();
-
-    // When everything done, release the video capture and write object
-    video.release();
-    videoOut.release();
-
-    updateProgress(env, 100);
-    logDebugAndShowUser(env, "Video output", "Finished processing in " +
-                        to_string(etime - itime) + " seconds");
-
-    return outName;
-}
 
 /**
 * Spatial Filtering : Gaussian blurand down sample
@@ -281,7 +81,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     // Creates the result video name
     string outName = outDir + name + "-heart-from-" + to_string(60 * fl) + "-to-" +
                      to_string(60 * fh) + "-alpha-" + to_string(alpha) + "-level-" + to_string(level) +
-                     "-chromAtn-" + to_string(chromAttenuation) + ".avi";
+                     "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
+                     "-roiY-" + to_string(roiY) + ".avi";
 
     logDebug("Video reception - Output file", outName);
 
@@ -562,10 +363,12 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     // Creates the result videoIn name
     string midName = outDir + name + "-breath-from-" + to_string(fl * 60) + "-to-" +
                      to_string(fh * 60) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
-                     "-chromAtn-" + to_string(chromAttenuation) + "-tmp" ".avi";
+                     "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
+                     "-roiY-" + to_string(roiY) + "-tmp" ".avi";
     string outName = outDir + name + "-breath-from-" + to_string(fl * 60) + "-to-" +
                      to_string(fh * 60) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
-                     "-chromAtn-" + to_string(chromAttenuation) + ".avi";
+                     "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
+                     "-roiY-" + to_string(roiY) + ".avi";
 
     logDebug("Video reception - Output file", outName);
 
@@ -819,41 +622,47 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     VideoWriter videoOut(outName, VideoWriter::fourcc('M', 'J', 'P', 'G'), fr,
                               Size(vidWidth, vidHeight));
 
-    int chunkCounter = -1;
     string bpmText;
     int INDICATOR_LEN = 5;
     int indicator_counter = 0;
+
+    int nSamples = 0;
+    bool avgReady = false;
+    int lastBpmIndex = 0;
+    double lastBpm = 0;
+    double AVG_ALPHA = 0.5;
 
     for (int i = startIndex; i < endIndex - 1; i++) {
 
         progress = (float) i / (float) endIndex;
 
-        if (i % CHUNK_SIZE == 0) {
-            // Update BPM
-            chunkCounter++;
-            double currBpm = 0;
-            if (peakIndexesByChunk[chunkCounter].size() > 1) {
-                #pragma omp parallel for default(none) shared(peakIndexesByChunk, currBpm, chunkCounter)
-                for (int j = 1; j < peakIndexesByChunk[chunkCounter].size(); j++) {
-                    currBpm += peakIndexesByChunk[chunkCounter][j] -
-                            peakIndexesByChunk[chunkCounter][j - 1];
+        if (i >= 1) {
+            // New positive edge
+            if (contoursCount[i] && !contoursCount[i - 1]) {
+                if (nSamples) {
+                    double currBpm = 60.0 * fr / (i - lastBpmIndex);
+                    if (avgReady) {
+                        // Using exponential moving average
+                        bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
+                        lastBpm = bpm;
+                    } else {
+                        bpm = currBpm;
+                        avgReady = true;
+                    }
                 }
+                nSamples++;
+                lastBpmIndex = i;
+                indicator_counter = INDICATOR_LEN;
             }
+        }
 
-            if(currBpm == 0) {
-                currBpm = bpm;
-            }
-            bpm = currBpm;
 
-            bpmText = "BPM: " + to_string(currBpm);
+        if (i % CHUNK_SIZE == 0) {
+            bpm == 0 ? bpmText = "Calculating..." : bpmText = "BPM: " + to_string(bpm);
         }
 
         logDebugAndShowUser(env, "Video output", "Writing frame " + to_string(i) +
                                                      " of " + to_string(endIndex - 2));
-
-        if(signal[i]) {
-            indicator_counter = INDICATOR_LEN;
-        }
 
         Mat frame;
         // Capture frame-by-frame
