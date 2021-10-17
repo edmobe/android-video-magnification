@@ -237,30 +237,33 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     for (int i = startIndex; i < endIndex; i++) {
         progress = (float) i / (float) endIndex;
 
-        // New positive edge
-        if (signals[i - 1] <= 0 && signals[i] == 1) {
-            if (nSamples) {
-                double currBpm = 60.0 * fr / (i - lastBpmIndex);
-                // False positive
-                if (currBpm < fl * 60 || currBpm > fh * 60) {
-                    nSamples--;
+        if (i > 1) {
+            // New positive edge
+            if (signals[i - 1] <= 0 && signals[i] == 1) {
+                if (nSamples) {
+                    double currBpm = 60.0 * fr / (i - lastBpmIndex);
+                    // False positive
+                    if (currBpm < fl * 60 || currBpm > fh * 60) {
+                        nSamples--;
+                    } else {
+                        indicator_counter = INDICATOR_LEN;
+                        if (avgReady) {
+                            // Using exponential moving average
+                            bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
+                            lastBpm = bpm;
+                        } else {
+                            bpm = currBpm;
+                            avgReady = true;
+                        }
+                    }
                 } else {
                     indicator_counter = INDICATOR_LEN;
-                    if (avgReady) {
-                        // Using exponential moving average
-                        bpm = AVG_ALPHA * currBpm + (1 - AVG_ALPHA) * bpm;
-                        lastBpm = bpm;
-                    } else {
-                        bpm = currBpm;
-                        avgReady = true;
-                    }
                 }
-            } else {
-                indicator_counter = INDICATOR_LEN;
+                nSamples++;
+                lastBpmIndex = i;
             }
-            nSamples++;
-            lastBpmIndex = i;
         }
+
 
         if (i % CHUNK_SIZE == 0) {
             bpm == 0 ? bpmText = "Calculating..." : bpmText = "BPM: " + to_string(bpm);
