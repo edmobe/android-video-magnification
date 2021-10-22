@@ -46,7 +46,7 @@ public class AppData {
     AppData(ContentResolver resolver) {
         // TODO: VALIDATE INITIAL NULL VALUES
         this.videoDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES).getPath() + "/video-magnification/";
+                Environment.DIRECTORY_MOVIES) + "/video-magnification/";
         pathManager = new PathManager(resolver);
     }
 

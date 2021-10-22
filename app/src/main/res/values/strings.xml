@@ -43,4 +43,6 @@
     <string name="roi_y">Y</string>
     <string name="roi_mark">O</string>
     <string name="convert_output_to_mp4">Convert output to MP4</string>
+    <string name="convert_new_video">Magnify new video</string>
+    <string name="view_converted_videos">View converted video</string>
 </resources>

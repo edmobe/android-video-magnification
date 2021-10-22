@@ -91,6 +91,10 @@ public class ConversionTask extends AsyncTask<String, Void, String> {
 
                 Runnable myRunnable = () -> {
                     ((VideoConverterActivity) context).getProgressBar().setVisibility(View.GONE);
+                    ((VideoConverterActivity) context).getButtonNewVideo()
+                            .setVisibility(View.VISIBLE);
+                    ((VideoConverterActivity) context).getButtonViewConvertedVideos()
+                            .setVisibility(View.VISIBLE);
                     ((VideoConverterActivity) context).getTextConversionInfo()
                             .setText("Successfully converted video to MP4");
                 };

@@ -50,12 +50,12 @@ public class MagnificatorFactory {
 //                    ((App) context.getApplication()).getAppData().getVideoDir(),
 //                    150,
 //                    6,
-//                    8.0/6.0,
-//                    9.0/6.0,
-//                    30,
+//                    136.8/60,
+//                    163.8/60,
+//                    25.22,
 //                    1,
-//                    128,
-//                    15);
+//                    292,
+//                    139);
         } else if (algorithmId == R.id.radio_laplacian_butterworth) {
 //            return new MagnificatorLpyrButter(
 //                    ((App) context.getApplication()).getAppData().getAviVideoPath(),

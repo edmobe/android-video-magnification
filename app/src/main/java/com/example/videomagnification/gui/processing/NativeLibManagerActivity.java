@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.videomagnification.R;
 import com.example.videomagnification.databinding.ActivityMainBinding;
+import com.example.videomagnification.gui.input.HomeActivity;
 import com.example.videomagnification.gui.input.VideoConverterActivity;
 import com.example.videomagnification.processing.magnificators.MagnificationTask;
 
@@ -26,6 +27,7 @@ public class NativeLibManagerActivity extends AppCompatActivity {
     public static ProgressBar progress;
 
     private Button buttonConvert;
+    private Button buttonNewVideo;
 
     private ActivityMainBinding binding;
     private MagnificationTask magnificationTask;
@@ -41,10 +43,15 @@ public class NativeLibManagerActivity extends AppCompatActivity {
         progress = findViewById(R.id.progress_magnify);
 
         buttonConvert = findViewById(R.id.btn_convert_output);
-
         buttonConvert.setOnClickListener(v -> {
             startActivity(new Intent(NativeLibManagerActivity.this,
                             VideoConverterActivity.class));
+        });
+
+        buttonNewVideo = findViewById(R.id.btn_new_video);
+        buttonNewVideo.setOnClickListener(v -> {
+            startActivity(new Intent(NativeLibManagerActivity.this,
+                    HomeActivity.class));
         });
 
         magnificationTask = new MagnificationTask(this);
@@ -52,6 +59,7 @@ public class NativeLibManagerActivity extends AppCompatActivity {
 
     }
 
+    public Button getButtonNewVideo() { return buttonNewVideo; }
     public Button getButtonConvert() {
         return buttonConvert;
     }

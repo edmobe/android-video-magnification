@@ -37,6 +37,7 @@ public class MagnificationTask extends AsyncTask<String, Void, String> {
             ((App) context.getApplication()).getAppData().setProcessedVideoPath(result);
             ((App) context.getApplication()).getAppData().setConversionType(1);
             ((NativeLibManagerActivity) context).getButtonConvert().setVisibility(View.VISIBLE);
+            ((NativeLibManagerActivity) context).getButtonNewVideo().setVisibility(View.VISIBLE);
         }
     }
 }
