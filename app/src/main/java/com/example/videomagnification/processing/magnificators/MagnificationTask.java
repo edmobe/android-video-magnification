@@ -19,11 +19,9 @@ public class MagnificationTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        // TODO: ERROR HANDLING
         try {
             Magnificator magnificator = magnificatorFactory.createMagnificator();
             return magnificator.magnify();
-
         } catch (Exception e) {
             return "error";
         }

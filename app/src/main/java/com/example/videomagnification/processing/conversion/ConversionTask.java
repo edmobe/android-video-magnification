@@ -24,8 +24,7 @@ public class ConversionTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        // TODO: ERROR HANDLING
-        // TODO: FIX OUTPUT VIDEO NOT WORKING ON WINDOWS 10
+        // TODO: OUTPUT VIDEO NOT WORKING ON WINDOWS 10
         try {
             // ======= CREATE DIRECTORY IF NEEDED =======
             videoConverter.createDirectoryIfNeeded();
@@ -63,6 +62,10 @@ public class ConversionTask extends AsyncTask<String, Void, String> {
             ((VideoConverterActivity) context).getProgressBar().setProgress(100);
             return "success";
         } catch (Exception e) {
+            ((VideoConverterActivity) context).getProgressBar().setVisibility(View.GONE);
+            // TODO: Make string resource
+            ((VideoConverterActivity) context).getTextConversionInfo().setText(
+                    e.getMessage());
             return "error";
         }
 
@@ -70,7 +73,6 @@ public class ConversionTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        // TODO: ERROR HANDLING
         super.onPostExecute(result);
         if (!result.equals("error")) {
             App.logDebug("Observable", "Completed!");
@@ -102,7 +104,10 @@ public class ConversionTask extends AsyncTask<String, Void, String> {
                 mainHandler.post(myRunnable);
 
             } else {
-                // TODO
+                ((VideoConverterActivity) context).getProgressBar().setVisibility(View.GONE);
+                // TODO: Make string resource
+                ((VideoConverterActivity) context).getTextConversionInfo().setText(
+                        "Error converting video");
             }
         }
     }

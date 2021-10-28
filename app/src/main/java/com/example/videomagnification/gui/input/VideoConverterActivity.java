@@ -2,6 +2,7 @@ package com.example.videomagnification.gui.input;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,8 +52,9 @@ public class VideoConverterActivity extends AppCompatActivity {
         } else if (conversionType == 1) {
             textConversionInfo.setText(getString(R.string.why_convert_output));
         } else {
-            // CONVERSION TYPE ERROR
-            // TODO
+            // TODO: Make string resource
+            textConversionInfo.setText("Unknown error.");
+            progressBar.setVisibility(View.GONE);
         }
 
         conversionTask = new ConversionTask(this, conversionType);

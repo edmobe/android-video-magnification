@@ -22,11 +22,12 @@ public class VideoConverter {
     }
 
     public void deleteFiles() {
+        // TODO: Check if there is any possible error remaining
         File dir = new File(((App) context.getApplication()).getAppData().getVideoDir());
         //Checking the directory exists
         if (!dir.exists())
             return;
-        //Getting the list of all the files in the specific  direcotry
+        // Getting the list of all the files in the specific  directory
         File fList[] = dir.listFiles();
 
         for (File f : fList) {
@@ -35,7 +36,6 @@ public class VideoConverter {
                     f.getName().endsWith(".avi") ||
                             f.getName().endsWith(".mjpeg") ||
                             f.getName().endsWith("_compressed.mp4")) {
-                // TODO: ERROR HANDLING
                 f.delete();
             }
 
@@ -47,7 +47,6 @@ public class VideoConverter {
         File outputsFolder = new File(((App) context.getApplication()).getAppData().getVideoDir());
         if (!outputsFolder.exists()) {
             try {
-                // TODO: ERROR HANDLING
                 outputsFolder.mkdir();
                 App.logDebug("Create directory",
                         "Created directory for the first time: " +
@@ -67,8 +66,8 @@ public class VideoConverter {
         return true;
     }
 
-    public String convertMp4ToMjpeg(Uri inputVideoUri) {
-        // TODO: Error handling
+    public String convertMp4ToMjpeg(Uri inputVideoUri) throws Exception {
+        // TODO: Check if there is any possible error remaining
         String inputVideoPath = FFmpegKitConfig.getSafParameterForRead(
                 context, inputVideoUri);
 
@@ -79,7 +78,6 @@ public class VideoConverter {
         String midVideoPath = ((App) context.getApplication()).getAppData().getMjpegVideoPath();
 
         // Compress video
-        // TODO: validate that the video is less than 20 seconds long
         // TODO: put conversion in another method
         // TODO: display progress bar to user more accurately
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
@@ -88,6 +86,14 @@ public class VideoConverter {
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
         int height = Integer.parseInt(
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+        int len = Integer.parseInt(
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+
+        if (len > 20 * 1000) {
+            // TODO: Make string resource
+            throw new Exception(
+                    "Video is more than 20 seconds long. Please try with another video.");
+        }
 
         String compressedVideoPath =
                 ((App) context.getApplication()).getAppData().getCompressedVideoPath();
@@ -104,7 +110,7 @@ public class VideoConverter {
                 scale = " -vf scale=-2:640 ";
             }
         } else {
-            // Just avoid divisible by 2 error
+            // Avoid divisible by 2 error
             // https://stackoverflow.com/questions/20847674/ffmpeg-libx264-height-not-divisible-by-2
             scale = " -vf \"crop=trunc(iw/2)*2:trunc(ih/2)*2\" ";
         }
@@ -131,7 +137,7 @@ public class VideoConverter {
     }
 
     public String convertAviToMjpeg(String inputVideoPath) {
-        // TODO: Error handling
+        // TODO: Check if there is any possible error remaining
         App.logDebug(
                 "Native lib", "Input video path: " + inputVideoPath);
         String midVideoPath = FilenameUtils.removeExtension(inputVideoPath) + ".mjpeg";
@@ -147,8 +153,7 @@ public class VideoConverter {
     }
 
     public Uri convertMjpegToAvi(String inputVideoPath) {
-        // TODO: Error handling
-        // TODO: remove conversion files when finished
+        // TODO: Check if there is any possible error remaining
         String outputVideoPath = ((App) context.getApplication()).getAppData().getAviVideoPath();
         FFmpegSession session2 = FFmpegKit.execute(
                 "-y -i " + inputVideoPath + " -q:v 2 -r 30 -vcodec mjpeg " + outputVideoPath);
@@ -163,7 +168,7 @@ public class VideoConverter {
 
 
     public Uri convertMjpegToMp4(String inputVideoPath) {
-        // TODO: Error handling
+        // TODO: Check if there is any possible error remaining
         String outputVideoPath = FilenameUtils.removeExtension(inputVideoPath) + ".mp4";
         FFmpegSession session2 = FFmpegKit.execute(
                 "-y -i " + inputVideoPath+ " -q:v 2 -vcodec libx265 -acodec aac " + outputVideoPath);

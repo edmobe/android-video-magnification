@@ -40,7 +40,6 @@ public class RoiSelectorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         /*
-         TODO: change circle to square
          TODO: verify if preview image is compressed
          TODO: verify if it is always in range
 

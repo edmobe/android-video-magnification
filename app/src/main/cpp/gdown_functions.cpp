@@ -303,7 +303,7 @@ double calculateAverageBpm(vector<int> data, int fr, double fh, double fl) {
 }
 
 Mat cropFrame(Mat frame, int roiX, int roiY) {
-    // TODO: validate bounds
+    // TODO: validate if bounds are covered in video editor
     if (roiX >= 50)
         roiX -= 50;
     if (roiY >= 50)

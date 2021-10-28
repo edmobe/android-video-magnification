@@ -254,7 +254,6 @@ public class VideoEditorParametersActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // TODO: Sampling rate range too large
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_editor_parameters);
 
