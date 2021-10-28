@@ -5,6 +5,7 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/imgproc.hpp>
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -237,6 +238,33 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     for (int i = startIndex; i < endIndex; i++) {
         progress = (float) i / (float) endIndex;
 
+        /* ====================== BPM CALCULATION ALGORITHM ===============================/
+             * Author: Eduardo Moya Bello.
+             * Organization: Instituto Tecnológico de Costa Rica.
+             * ================================================================================
+             *
+             * Consider this BPM pulse succession
+             *
+             *                      |<----- FIRST BPM CALCULATION ----->|
+             *
+             *                      .     .     .                       .     .     .
+             *                      |     |     |                       |     |     |
+             *                      |     |     |                       |     |     |
+             * _________._____._____|_____|_____|_____._____._____._____|_____|_____|_____.____...
+             * i =      0     1     2     3     4     5     6     7     8     9     10    11
+             *
+             * - When i = 0, we do not have enough data to say if there is a positive edge, then
+             *   i must be >= 1.
+             * - At i = 2, we get the first BPM sample, but we cannot calculate the BPM yet, to do
+             *   that, we need to have at least 1 sample (nSamples == true).
+             * - If the current BPM is lower than the minimum BPM possible, then it is a false
+             *   positive. The same applies if the current BPM is greater than the maximum BPM.
+             * - The BPM average needs more than one BPM calculation. Therefore, we use the
+             *   averageReady boolean. One can also use nSamples > 1.
+             * - The indicator_counter counts how many frames the red BPM indicator will be turned
+             *   on.
+             *
+             * */
         if (i > 1) {
             // New positive edge
             if (signals[i - 1] <= 0 && signals[i] == 1) {
@@ -244,6 +272,18 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
                     double currBpm = 60.0 * fr / (i - lastBpmIndex);
                     // False positive
                     if (currBpm < fl * 60 || currBpm > fh * 60) {
+                        /*
+                         * This sample will not count, however BPM index will be updated.
+                         * Consider this case:
+                         *
+                         * If the first BPM pulse is a false positive, the next pulses could
+                         * never be updated, because the first pulse would always be correct,
+                         * even if it is not. Furthermore, if there is a succession of false
+                         * positives and the BPM index is not updated, currBpm could always
+                         * be greater than fh * 60, avoiding the algorithm to update the BPM
+                         * for the rest of its execution.
+                         *
+                         * */
                         nSamples--;
                     } else {
                         indicator_counter = INDICATOR_LEN;
@@ -603,6 +643,8 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     bool avgReady = false;
     int lastBpmIndex = 0;
     double lastBpm = 0;
+
+
 
     for (int i = startIndex; i < endIndex - 1; i++) {
 
