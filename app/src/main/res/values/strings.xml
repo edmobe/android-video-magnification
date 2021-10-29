@@ -16,7 +16,7 @@
     <string name="heart_rate">Heart rate</string>
     <string name="respiratory_rate">Respiratory rate</string>
     <string name="open_video_to_start">Open Video to Start</string>
-    <string name="video_magnificator_description">The Video Magnificator is a project developed in the Costa Rica Institute of Technology that utilizes an Android resource optimized Eulerian video magnification algorithm to obtain heart rate or respiratory rate.</string>
+    <string name="video_magnificator_description">The Video Magnificator is a project developed in the Costa Rica Institute of Technology that implements an Android resource optimized version of the MIT CSAIL Eulerian Video Magnification Algorithm, to obtain heart rate or respiratory rate.</string>
     <string name="magnifying">Magnifying...</string>
     <string name="video_file_path">Video file path</string>
     <string name="video_file_path_thumbnail">Video file path for thumbnail</string>

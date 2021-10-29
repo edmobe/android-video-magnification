@@ -93,6 +93,13 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
                      "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
                      "-roiY-" + to_string(roiY) + ".avi";
 
+    string logOutName = outDir + name + "-heart-from-" + to_string(60 * fl) + "-to-" +
+                     to_string(60 * fh) + "-alpha-" + to_string(alpha) + "-level-" + to_string(level) +
+                     "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
+                     "-roiY-" + to_string(roiY) + ".txt";
+
+    ofstream bpmLog(logOutName);
+
     logDebug("Video reception - Output file", outName);
 
     // Read video
@@ -239,32 +246,32 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
         progress = (float) i / (float) endIndex;
 
         /* ====================== BPM CALCULATION ALGORITHM ===============================/
-             * Author: Eduardo Moya Bello.
-             * Organization: Instituto Tecnológico de Costa Rica.
-             * ================================================================================
-             *
-             * Consider this BPM pulse succession
-             *
-             *                      |<----- FIRST BPM CALCULATION ----->|
-             *
-             *                      .     .     .                       .     .     .
-             *                      |     |     |                       |     |     |
-             *                      |     |     |                       |     |     |
-             * _________._____._____|_____|_____|_____._____._____._____|_____|_____|_____.____...
-             * i =      0     1     2     3     4     5     6     7     8     9     10    11
-             *
-             * - When i = 0, we do not have enough data to say if there is a positive edge, then
-             *   i must be >= 1.
-             * - At i = 2, we get the first BPM sample, but we cannot calculate the BPM yet, to do
-             *   that, we need to have at least 1 sample (nSamples == true).
-             * - If the current BPM is lower than the minimum BPM possible, then it is a false
-             *   positive. The same applies if the current BPM is greater than the maximum BPM.
-             * - The BPM average needs more than one BPM calculation. Therefore, we use the
-             *   averageReady boolean. One can also use nSamples > 1.
-             * - The indicator_counter counts how many frames the red BPM indicator will be turned
-             *   on.
-             *
-             * */
+         * Author: Eduardo Moya Bello.
+         * Organization: Instituto Tecnológico de Costa Rica.
+         * ================================================================================
+         *
+         * Consider this BPM pulse succession
+         *
+         *                      |<----- FIRST BPM CALCULATION ----->|
+         *
+         *                      .     .     .                       .     .     .
+         *                      |     |     |                       |     |     |
+         *                      |     |     |                       |     |     |
+         * _________._____._____|_____|_____|_____._____._____._____|_____|_____|_____.____...
+         * i =      0     1     2     3     4     5     6     7     8     9     10    11
+         *
+         * - When i = 0, we do not have enough data to say if there is a positive edge, then
+         *   i must be >= 1.
+         * - At i = 2, we get the first BPM sample, but we cannot calculate the BPM yet, to do
+         *   that, we need to have at least 1 sample (nSamples == true).
+         * - If the current BPM is lower than the minimum BPM possible, then it is a false
+         *   positive. The same applies if the current BPM is greater than the maximum BPM.
+         * - The BPM average needs more than one BPM calculation. Therefore, we use the
+         *   averageReady boolean. One can also use nSamples > 1.
+         * - The indicator_counter counts how many frames the red BPM indicator will be turned
+         *   on.
+         *
+         * */
         if (i > 1) {
             // New positive edge
             if (signals[i - 1] <= 0 && signals[i] == 1) {
@@ -304,6 +311,7 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
             }
         }
 
+        bpmLog << "Frame " + to_string(i) + ": " + to_string(bpm) + " BPM.\n";
 
         if (i % CHUNK_SIZE == 0) {
             bpm == 0 ? bpmText = "Calculating..." : bpmText = "BPM: " + to_string(bpm);
@@ -335,6 +343,8 @@ string amplify_spatial_Gdown_temporal_ideal(JNIEnv *env, string inFile, string o
     // When everything done, release the video capture and write object
     video.release();
     videoOut.release();
+
+    bpmLog.close();
 
     etime = omp_get_wtime();
 
@@ -416,6 +426,12 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
                      to_string(fh * 60) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
                      "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
                      "-roiY-" + to_string(roiY) + ".avi";
+    string logOutName = outDir + name + "-breath-from-" + to_string(fl * 60) + "-to-" +
+                        to_string(fh * 60) + "-alpha-" + to_string(alpha) + "-lambda_c-" + to_string(lambda_c) +
+                        "-chromAtn-" + to_string(chromAttenuation) + "-roiX-" + to_string(roiX) +
+                        "-roiY-" + to_string(roiY) + ".txt";
+
+    ofstream bpmLog(logOutName);
 
     logDebug("Video reception - Output file", outName);
 
@@ -649,35 +665,34 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
     for (int i = startIndex; i < endIndex - 1; i++) {
 
         progress = (float) i / (float) endIndex;
-
+        /* ====================== BPM CALCULATION ALGORITHM ===============================/
+         * Author: Eduardo Moya Bello.
+         * Organization: Instituto Tecnológico de Costa Rica.
+         * ================================================================================
+         *
+         * Consider this BPM pulse succession
+         *
+         *                      |<----- FIRST BPM CALCULATION ----->|
+         *
+         *                      .     .     .                       .     .     .
+         *                      |     |     |                       |     |     |
+         *                      |     |     |                       |     |     |
+         * _________._____._____|_____|_____|_____._____._____._____|_____|_____|_____.____...
+         * i =      0     1     2     3     4     5     6     7     8     9     10    11
+         *
+         * - When i = 0, we do not have enough data to say if there is a positive edge, then
+         *   i must be >= 1.
+         * - At i = 2, we get the first BPM sample, but we cannot calculate the BPM yet, to do
+         *   that, we need to have at least 1 sample (nSamples == true).
+         * - If the current BPM is lower than the minimum BPM possible, then it is a false
+         *   positive. The same applies if the current BPM is greater than the maximum BPM.
+         * - The BPM average needs more than one BPM calculation. Therefore, we use the
+         *   averageReady boolean. One can also use nSamples > 1.
+         * - The indicator_counter counts how many frames the red BPM indicator will be turned
+         *   on.
+         *
+         * */
         if (i >= 1) {
-            /* ====================== BPM CALCULATION ALGORITHM ===============================/
-             * Author: Eduardo Moya Bello.
-             * Organization: Instituto Tecnológico de Costa Rica.
-             * ================================================================================
-             *
-             * Consider this BPM pulse succession
-             *
-             *                      |<----- FIRST BPM CALCULATION ----->|
-             *
-             *                      .     .     .                       .     .     .
-             *                      |     |     |                       |     |     |
-             *                      |     |     |                       |     |     |
-             * _________._____._____|_____|_____|_____._____._____._____|_____|_____|_____.____...
-             * i =      0     1     2     3     4     5     6     7     8     9     10    11
-             *
-             * - When i = 0, we do not have enough data to say if there is a positive edge, then
-             *   i must be >= 1.
-             * - At i = 2, we get the first BPM sample, but we cannot calculate the BPM yet, to do
-             *   that, we need to have at least 1 sample (nSamples == true).
-             * - If the current BPM is lower than the minimum BPM possible, then it is a false
-             *   positive. The same applies if the current BPM is greater than the maximum BPM.
-             * - The BPM average needs more than one BPM calculation. Therefore, we use the
-             *   averageReady boolean. One can also use nSamples > 1.
-             * - The indicator_counter counts how many frames the red BPM indicator will be turned
-             *   on.
-             *
-             * */
             // New positive edge
             if (contoursCount[i] && !contoursCount[i - 1]) {
                 if (nSamples) {
@@ -717,6 +732,8 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
             }
         }
 
+        bpmLog << "Frame " + to_string(i) + ": " + to_string(bpm) + " BPM.\n";
+
         if (i % CHUNK_SIZE == 0) {
             bpm == 0 ? bpmText = "Calculating..." : bpmText = "BPM: " + to_string(bpm);
         }
@@ -751,6 +768,7 @@ string amplify_spatial_lpyr_temporal_butter(JNIEnv *env, string inFile, string o
 
     videoMidRead.release();
     videoOut.release();
+    bpmLog.close();
 
     etime = omp_get_wtime();
 
