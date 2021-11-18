@@ -9,6 +9,10 @@ cmake_minimum_required(VERSION 3.10.2)
 
 project("videomagnification")
 
+# OpenMP
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -static-openmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -static-openmp")
+
 # OpenCV
 set(OpenCV_STATIC ON)
 set(OpenCV_DIR $ENV{OPENCV_ANDROID}/sdk/native/jni)
@@ -26,8 +30,18 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             opencv-utils.cpp
-             native-lib.cpp )
+            jniLogs.cpp
+            ellf.c
+            cmplx.c
+            const.c
+            mtherr.c
+            im_conv.cpp
+            vector_functions.cpp
+            PeakFinder.cpp
+            lpyr_functions.cpp
+            gdown_functions.cpp
+            processing_functions.cpp
+            native-lib.cpp )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

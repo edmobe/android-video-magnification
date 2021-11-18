@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Video Magnification</string>
+    <string name="gaussian_ideal_bandpass">Gaussian ideal bandpass</string>
+    <string name="laplacian_ideal_bandpass">Laplacian ideal bandpass</string>
+    <string name="laplacian_butterworth">Laplacian Butterworth</string>
+    <string name="laplacian_iir">Laplacian IIR</string>
+    <string name="magnify_video">Magnify video</string>
+    <string name="select_an_algorithm">Select an algorithm</string>
+    <string name="magnify">Magnify</string>
+    <string name="motion">Motion</string>
+    <string name="color">Color</string>
+    <string name="next">Next</string>
+    <string name="video_preview">Video preview</string>
+    <string name="extract">Extract</string>
+    <string name="heart_rate">Heart rate</string>
+    <string name="respiratory_rate">Respiratory rate</string>
+    <string name="open_video_to_start">Open Video to Start</string>
+    <string name="video_magnificator_description">The Video Magnificator is a project developed in the Costa Rica Institute of Technology that utilizes an Android resource optimized Eulerian video magnification algorithm to obtain heart rate or respiratory rate.</string>
+    <string name="magnifying">Magnifying...</string>
+    <string name="video_file_path">Video file path</string>
+    <string name="start_magnification">Start magnification</string>
+    <string name="select_parameters">Select parameters</string>
+    <string name="lambda_c">Lambda C</string>
+    <string name="low_frequency">Low frequency</string>
+    <string name="high_frequency">High frequency</string>
+    <string name="sampling_rate">Sampling rate</string>
+    <string name="chrom_attenuation">Chrom Attenuation</string>
+    <string name="temporal_filtering">Temporal filtering</string>
+    <string name="level">Level</string>
+    <string name="r2">R2</string>
+    <string name="r1">R1</string>
+    <string name="converting_video">Converting video...</string>
+    <string name="why_convert">Please wait. The video must be converted to a specific format so that the Video Magnificator can process it.</string>
+</resources>
